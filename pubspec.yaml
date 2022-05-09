@@ -1,0 +1,42 @@
+name: jyngles
+description: A new Flutter project.
+
+publish_to: "none"
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.16.2 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.2
+  new_gradient_app_bar: ^0.2.0
+  get: ^4.6.1
+  flutter_svg: ^1.0.3
+  lottie: ^1.2.2
+  table_calendar: ^3.0.5
+  fl_chart: ^0.50.1
+  intl_phone_field: ^3.1.0
+  syncfusion_flutter_datepicker: ^20.1.50
+  checkbox_grouped: ^1.8.0
+  intl_phone_number_input: ^0.7.0+2
+  fluttertoast: ^8.0.9
+  http: ^0.13.4
+  shared_preferences: ^2.0.6
+  shimmer: ^2.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^1.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/icons/
