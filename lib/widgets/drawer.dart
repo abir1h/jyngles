@@ -10,12 +10,10 @@ import 'package:jyngles/screens/sign_in_up/signin.dart';
 import 'package:jyngles/screens/transactions/transaction_history.dart';
 import 'package:jyngles/utils/colors.dart';
 import 'package:jyngles/widgets/custom_bottom_navigation.dart';
-
-import '../screens/home/home_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../screens/settings/settings.dart';
-import '../screens/transactions/transaction.dart';
 
-class CustomDrawer extends StatelessWidget {
+class CustomDrawer extends StatefulWidget {
   const CustomDrawer({
     Key? key,
     required this.height,
@@ -26,30 +24,46 @@ class CustomDrawer extends StatelessWidget {
   final double width;
 
   @override
+  State<CustomDrawer> createState() => _CustomDrawerState();
+}
+
+class _CustomDrawerState extends State<CustomDrawer> {
+  String? _userName;
+  Future getInfo() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? name = prefs.getString('username');
+    setState(() {
+      _userName = name;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    getInfo();
+
     return Drawer(
       child: Stack(
         children: [
           Container(
             color: AppColors.sidebarColor1,
             child: ListView(
-              padding: EdgeInsets.only(right: width * 0.08),
+              padding: EdgeInsets.only(right: widget.width * 0.08),
               children: [
-                SizedBox(height: height * 0.05),
+                SizedBox(height: widget.height * 0.05),
                 const CircleAvatar(
                   radius: 40,
                   backgroundImage: AssetImage('assets/images/sender.jpeg'),
                 ),
-                SizedBox(height: height * 0.02),
+                SizedBox(height: widget.height * 0.02),
                 Center(
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Column(
                       children: [
-                        SizedBox(width: width * 0.2),
-                        const Text(
-                          "AL Mamun",
-                          style: TextStyle(
+                        SizedBox(width: widget.width * 0.2),
+                        Text(
+                          _userName ?? '',
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 20,
                             fontWeight: FontWeight.w600,
@@ -72,7 +86,7 @@ class CustomDrawer extends StatelessWidget {
                     ),
                   ),
                 ),
-                SizedBox(height: height * 0.02),
+                SizedBox(height: widget.height * 0.02),
                 ListTile(
                   onTap: () {
                     Get.offAll(
@@ -85,7 +99,7 @@ class CustomDrawer extends StatelessWidget {
                     children: [
                       SvgPicture.asset('assets/icons/home.svg'),
                       SizedBox(
-                        width: width * 0.03,
+                        width: widget.width * 0.03,
                       ),
                       const Text(
                         "Home",
@@ -110,7 +124,7 @@ class CustomDrawer extends StatelessWidget {
                     children: [
                       SvgPicture.asset('assets/icons/transaction.svg'),
                       SizedBox(
-                        width: width * 0.03,
+                        width: widget.width * 0.03,
                       ),
                       const Text(
                         "Transaction History",
@@ -138,7 +152,7 @@ class CustomDrawer extends StatelessWidget {
                         color: AppColors.tabbarIconColor2,
                       ),
                       SizedBox(
-                        width: width * 0.03,
+                        width: widget.width * 0.03,
                       ),
                       const Text(
                         "Calendar",
@@ -160,7 +174,7 @@ class CustomDrawer extends StatelessWidget {
                     children: [
                       SvgPicture.asset('assets/icons/bank.svg'),
                       SizedBox(
-                        width: width * 0.03,
+                        width: widget.width * 0.03,
                       ),
                       const Text(
                         "Bank Account",
@@ -185,7 +199,7 @@ class CustomDrawer extends StatelessWidget {
                     children: [
                       SvgPicture.asset('assets/icons/goal-debt.svg'),
                       SizedBox(
-                        width: width * 0.03,
+                        width: widget.width * 0.03,
                       ),
                       const Text(
                         "Goals/Debt",
@@ -210,7 +224,7 @@ class CustomDrawer extends StatelessWidget {
                     children: [
                       SvgPicture.asset('assets/icons/report.svg'),
                       SizedBox(
-                        width: width * 0.03,
+                        width: widget.width * 0.03,
                       ),
                       const Text(
                         "Report",
@@ -235,7 +249,7 @@ class CustomDrawer extends StatelessWidget {
                     children: [
                       SvgPicture.asset('assets/icons/reset_pass.svg'),
                       SizedBox(
-                        width: width * 0.03,
+                        width: widget.width * 0.03,
                       ),
                       const Text(
                         "Reset Password",
@@ -260,7 +274,7 @@ class CustomDrawer extends StatelessWidget {
                     children: [
                       SvgPicture.asset('assets/icons/settings.svg'),
                       SizedBox(
-                        width: width * 0.03,
+                        width: widget.width * 0.03,
                       ),
                       const Text(
                         "Settings",
@@ -282,7 +296,7 @@ class CustomDrawer extends StatelessWidget {
                     children: [
                       SvgPicture.asset('assets/icons/logout.svg'),
                       SizedBox(
-                        width: width * 0.03,
+                        width: widget.width * 0.03,
                       ),
                       const Text(
                         "Logout",

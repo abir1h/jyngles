@@ -8,6 +8,7 @@ import 'package:jyngles/screens/profile/add_user.dart';
 import 'package:jyngles/screens/profile/view_user.dart';
 import 'package:jyngles/utils/colors.dart';
 import 'package:jyngles/widgets/custom_bottom_navigation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../widgets/conrgatulations.dart';
 import '../../widgets/drawer.dart';
 import '../transactions/transaction_history.dart';
@@ -31,8 +32,25 @@ class _ProfileScreenState extends State<ProfileScreen>
     _controller = TabController(length: 1, vsync: this);
   }
 
+  String? _userName;
+  String? _userEmail;
+  String? _userPhone;
+
+  Future getInfo() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? name = prefs.getString('username');
+    String? email = prefs.getString('email');
+    String? phone = prefs.getString('phone');
+    setState(() {
+      _userName = name;
+      _userEmail = email;
+      _userPhone = phone;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    getInfo();
     final height = MediaQuery.of(context).size.height;
     final width = MediaQuery.of(context).size.width;
     return WillPopScope(
@@ -95,9 +113,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'AL Mamun',
-                            style: TextStyle(
+                          Text(
+                            _userName ?? '',
+                            style: const TextStyle(
                               color: Colors.black,
                               fontSize: 20,
                               fontWeight: FontWeight.w600,
@@ -117,7 +135,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                           ElevatedButton(
                             onPressed: () {
                               Get.to(
-                                AddUser(),
+                                const AddUser(),
                               );
                             },
                             child: const Text('Add User'),
@@ -161,9 +179,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                       ),
                     ),
                     SizedBox(height: height * 0.02),
-                    const Text(
-                      'AL Mamun',
-                      style: TextStyle(
+                    Text(
+                      _userName ?? '',
+                      style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w400,
                         color: Colors.black,
@@ -194,9 +212,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                       ),
                     ),
                     SizedBox(height: height * 0.02),
-                    const Text(
-                      'abcd@gmail.com',
-                      style: TextStyle(
+                    Text(
+                      _userEmail ?? '',
+                      style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w400,
                         color: Colors.black,
@@ -227,9 +245,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                       ),
                     ),
                     SizedBox(height: height * 0.02),
-                    const Text(
-                      '+8801234567890',
-                      style: TextStyle(
+                    Text(
+                      _userPhone ?? '',
+                      style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w400,
                         color: Colors.black,

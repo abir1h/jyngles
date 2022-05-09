@@ -5,7 +5,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
-import 'package:jyngles/screens/sign_in_up/signin.dart';
 import 'package:jyngles/screens/sign_in_up/success_screen.dart';
 import 'package:jyngles/screens/sign_in_up/user_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';

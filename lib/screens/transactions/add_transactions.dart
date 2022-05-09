@@ -565,6 +565,11 @@ class _AddTransactionsState extends State<AddTransactions>
                                               fontSize: 16.0,
                                             );
                                           } else {
+                                            if (_incomeDescController
+                                                .text.isEmpty) {
+                                              _incomeDescController.text =
+                                                  'No description';
+                                            }
                                             addIncomeApi(
                                               '${selectedDate.toLocal()}.split('
                                                       ')[0]'
@@ -871,6 +876,11 @@ class _AddTransactionsState extends State<AddTransactions>
                                               fontSize: 16.0,
                                             );
                                           } else {
+                                            if (_expenseDescController
+                                                .text.isEmpty) {
+                                              _expenseDescController.text =
+                                                  'No description';
+                                            }
                                             addExpenseApi(
                                               '${selectedDate.toLocal()}.split('
                                                       ')[0]'

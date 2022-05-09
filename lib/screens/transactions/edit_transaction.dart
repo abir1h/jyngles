@@ -1,21 +1,28 @@
+import 'dart:convert';
+
 import 'package:checkbox_grouped/checkbox_grouped.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
-
+import 'package:http/http.dart' as http;
+import 'package:jyngles/utils/appurl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../utils/colors.dart';
 
 class EditTransaction extends StatefulWidget {
-  const EditTransaction({
+  EditTransaction({
     Key? key,
     required this.isIncome,
     required this.amount,
     required this.category,
     required this.desc,
+    required this.id,
   }) : super(key: key);
   final bool isIncome;
   final String amount;
-  final String category;
+  String category;
   final String desc;
+  final String id;
 
   @override
   State<EditTransaction> createState() => _EditTransactionState();
@@ -39,7 +46,213 @@ class _EditTransactionState extends State<EditTransaction> {
     }
   }
 
-  // bool value = false;
+  TextEditingController amountController = TextEditingController();
+  TextEditingController categoryController = TextEditingController();
+  TextEditingController descriptionController = TextEditingController();
+
+  //!Edit Transaction
+  Future editIncome(String date, String amount, String category_id,
+      String title, String description) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('token');
+    Map<String, String> requestHeaders = {
+      'Accept': 'application/json',
+      'authorization': "Bearer $token"
+    };
+    var request = await http.MultipartRequest(
+      'POST',
+      Uri.parse(AppUrl.editIncome + widget.id),
+    );
+    request.fields.addAll({
+      'date': date,
+      'amount': amount,
+      'category_id': category_id,
+      'title': title,
+      'description': description,
+    });
+
+    request.headers.addAll(requestHeaders);
+
+    request.send().then((result) async {
+      http.Response.fromStream(result).then((response) {
+        if (response.statusCode == 200) {
+          var data = jsonDecode(response.body);
+
+          if (data['status_code'] == 200) {
+            var data = jsonDecode(response.body);
+            print(data);
+            print('response.body ' + data.toString());
+
+            Fluttertoast.showToast(
+              msg: "Edited Successfully",
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.white,
+              textColor: Colors.black,
+              fontSize: 16.0,
+            );
+            Get.back();
+          } else {
+            print("post have no Data${response.body}");
+            var data = jsonDecode(response.body);
+            Fluttertoast.showToast(
+              msg: data['message'],
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.red,
+              textColor: Colors.white,
+              fontSize: 16.0,
+            );
+          }
+          return response.body;
+        }
+      });
+    });
+  }
+
+  Future editExpense(String date, String amount, String category_id,
+      String title, String description) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('token');
+    Map<String, String> requestHeaders = {
+      'Accept': 'application/json',
+      'authorization': "Bearer $token"
+    };
+    var request = await http.MultipartRequest(
+      'POST',
+      Uri.parse(AppUrl.editExpense + widget.id),
+    );
+    request.fields.addAll({
+      'date': date,
+      'amount': amount,
+      'category_id': category_id,
+      'title': title,
+      'description': description,
+    });
+
+    request.headers.addAll(requestHeaders);
+
+    request.send().then((result) async {
+      http.Response.fromStream(result).then((response) {
+        if (response.statusCode == 200) {
+          var data = jsonDecode(response.body);
+
+          if (data['status_code'] == 200) {
+            var data = jsonDecode(response.body);
+            print(data);
+            print('response.body ' + data.toString());
+
+            Fluttertoast.showToast(
+              msg: "Edited Successfully",
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.white,
+              textColor: Colors.black,
+              fontSize: 16.0,
+            );
+            Get.back();
+          } else {
+            print("post have no Data${response.body}");
+            var data = jsonDecode(response.body);
+            Fluttertoast.showToast(
+              msg: data['message'],
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.red,
+              textColor: Colors.white,
+              fontSize: 16.0,
+            );
+          }
+          return response.body;
+        }
+      });
+    });
+  }
+
+  //!DELETE API
+
+  Future deleteIncome(String id) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('token');
+
+    Map<String, String> requestHeaders = {
+      'Accept': 'application/json',
+      'authorization': "Bearer $token"
+    };
+
+    var response = await http.get(Uri.parse(AppUrl.deleteIncome + id),
+        headers: requestHeaders);
+    if (response.statusCode == 200) {
+      print(response.body);
+      var data = jsonDecode(response.body);
+      Fluttertoast.showToast(
+        msg: data['message'],
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.white,
+        textColor: Colors.black,
+        fontSize: 16.0,
+      );
+      Get.back();
+    } else {
+      print(response.body);
+      var data = jsonDecode(response.body);
+      Fluttertoast.showToast(
+        msg: data['message'],
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.white,
+        textColor: Colors.black,
+        fontSize: 16.0,
+      );
+    }
+  }
+
+  Future deleteExpence(String id) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('token');
+
+    Map<String, String> requestHeaders = {
+      'Accept': 'application/json',
+      'authorization': "Bearer $token"
+    };
+
+    var response = await http.get(Uri.parse(AppUrl.deleteExpense + id),
+        headers: requestHeaders);
+    if (response.statusCode == 200) {
+      print(response.body);
+      var data = jsonDecode(response.body);
+      Fluttertoast.showToast(
+        msg: data['message'],
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.white,
+        textColor: Colors.black,
+        fontSize: 16.0,
+      );
+      Get.back();
+    } else {
+      print(response.body);
+      var data = jsonDecode(response.body);
+      Fluttertoast.showToast(
+        msg: data['message'],
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.white,
+        textColor: Colors.black,
+        fontSize: 16.0,
+      );
+    }
+  }
+
   List<bool> values = [false, false];
 
   GroupController controller = GroupController();
@@ -241,6 +454,7 @@ class _EditTransactionState extends State<EditTransaction> {
                       height: height * 0.04,
                       width: width * 0.7,
                       child: TextField(
+                        controller: amountController,
                         decoration: InputDecoration(
                           enabled: isInEdit ? true : false,
                           border: InputBorder.none,
@@ -288,7 +502,8 @@ class _EditTransactionState extends State<EditTransaction> {
                         ),
                         onChanged: (String? newValue) {
                           setState(() {
-                            category = newValue!;
+                            widget.category =
+                                newValue!; //TODO changed here. needs to recheck
                           });
                         },
                         items: <String>[
@@ -338,6 +553,7 @@ class _EditTransactionState extends State<EditTransaction> {
                           height: height * 0.04,
                           width: width * 0.7,
                           child: TextField(
+                            controller: descriptionController,
                             enabled: isInEdit ? true : false,
                             decoration: InputDecoration(
                               border: InputBorder.none,
@@ -364,14 +580,41 @@ class _EditTransactionState extends State<EditTransaction> {
                             //!Delete
                             InkWell(
                               onTap: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (context) => CustomDialog(
-                                    height: height,
-                                    width: width,
-                                    mgs: 'Update',
-                                  ),
-                                );
+                                // showDialog(
+                                //   context: context,
+                                //   builder: (context) => CustomDialog(
+                                //     height: height,
+                                //     width: width,
+                                //     mgs: 'Update',
+                                //   ),
+                                // );
+                                widget.isIncome
+                                    ? editIncome(
+                                        '${selectedDate.toLocal()}.split('
+                                                ')[0]'
+                                            .split(' ')[0],
+                                        amountController.text.isEmpty
+                                            ? widget.amount
+                                            : amountController.text,
+                                        '1',
+                                        widget.category,
+                                        descriptionController.text.isEmpty
+                                            ? widget.desc
+                                            : descriptionController.text,
+                                      )
+                                    : editExpense(
+                                        '${selectedDate.toLocal()}.split('
+                                                ')[0]'
+                                            .split(' ')[0],
+                                        amountController.text.isEmpty
+                                            ? widget.amount
+                                            : amountController.text,
+                                        '1',
+                                        widget.category,
+                                        descriptionController.text.isEmpty
+                                            ? widget.desc
+                                            : descriptionController.text,
+                                      );
                               },
                               child: Container(
                                 height: height * 0.065,
@@ -400,13 +643,18 @@ class _EditTransactionState extends State<EditTransaction> {
                             //!Delete
                             InkWell(
                               onTap: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (context) => CustomDialog(
-                                      height: height,
-                                      width: width,
-                                      mgs: 'Delete'),
-                                );
+                                widget.isIncome
+                                    ? deleteIncome(widget.id)
+                                    : deleteExpence(widget.id);
+
+                                // showDialog(
+                                //   context: context,
+                                //   builder: (context) => CustomDialog(
+                                //     height: height,
+                                //     width: width,
+                                //     mgs: 'Delete',
+                                //   ),
+                                // );
                               },
                               child: Container(
                                 height: height * 0.065,

@@ -24,10 +24,12 @@ class _SignInPageState extends State<SignInPage> {
 
   bool isLogginIn = false;
 
-  saveprefs(String token, String phone) async {
+  saveprefs(String token, String phone, String username, String email) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString('token', token);
     prefs.setString('phone', phone);
+    prefs.setString('username', username);
+    prefs.setString('email', email);
   }
 
   Future login_api(String email, String password) async {
@@ -58,6 +60,8 @@ class _SignInPageState extends State<SignInPage> {
             saveprefs(
               data['token']['plainTextToken'],
               data['data']['phone'],
+              data['data']['username'],
+              data['data']['email'],
             );
 
             setState(() {

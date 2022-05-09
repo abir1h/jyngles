@@ -325,6 +325,10 @@ class _TransactionHistoryState extends State<TransactionHistory>
                                                     ['title'],
                                                 billTime: snapshot.data[index]
                                                     ['date'],
+                                                billDesc: snapshot.data[index]
+                                                    ['description'],
+                                                id: snapshot.data[index]['id']
+                                                    .toString(),
                                               );
                                             },
                                           ),
@@ -463,6 +467,10 @@ class _TransactionHistoryState extends State<TransactionHistory>
                                                       ['title'],
                                                   billTime: snapshot.data[index]
                                                       ['date'],
+                                                  billDesc: snapshot.data[index]
+                                                      ['description'],
+                                                  id: snapshot.data[index]['id']
+                                                      .toString(),
                                                 );
                                               },
                                             ),
@@ -512,6 +520,8 @@ class BillList extends StatelessWidget {
     required this.billName,
     required this.billTime,
     required this.isIncome,
+    required this.billDesc,
+    required this.id,
   }) : super(key: key);
 
   final double width;
@@ -520,6 +530,8 @@ class BillList extends StatelessWidget {
   final String billAmount;
   final String billTime;
   final bool isIncome;
+  final String billDesc;
+  final String id;
 
   @override
   Widget build(BuildContext context) {
@@ -584,7 +596,8 @@ class BillList extends StatelessWidget {
                             isIncome: isIncome ? true : false,
                             amount: billAmount,
                             category: billName,
-                            desc: billName,
+                            desc: billDesc,
+                            id: id,
                           ),
                           transition: Transition.rightToLeft,
                         );
