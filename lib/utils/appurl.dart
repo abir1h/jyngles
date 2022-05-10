@@ -10,7 +10,7 @@ class AppUrl {
   static const String showIncome = baseURL + 'auth/income/show';
   static const String addIncome = baseURL + 'auth/income/post';
   static const String addExpence = baseURL + 'auth/expense/post';
-  
+
   static const String sendPhoneNumber = baseURL + 'forget/password';
   static const String changePassword = baseURL + 'forget/password/verify';
   static const String resetPassword = baseURL + 'auth/change/password';
@@ -20,4 +20,9 @@ class AppUrl {
 
   static const String editIncome = baseURL + 'auth/income/edit/';
   static const String editExpense = baseURL + 'auth/expense/edit/';
+
+  static const String editProfile = baseURL + 'auth/profile/edit';
+
+  static const String goalShow = baseURL + 'auth/goal/show';
+  static const String debtShow = baseURL + 'auth/debt/show';
 }

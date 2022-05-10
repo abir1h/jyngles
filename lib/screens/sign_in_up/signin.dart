@@ -67,6 +67,7 @@ class _SignInPageState extends State<SignInPage> {
             setState(() {
               isLogginIn = false;
             });
+            
             Fluttertoast.showToast(
               msg: "Logged In Successfully",
               toastLength: Toast.LENGTH_LONG,

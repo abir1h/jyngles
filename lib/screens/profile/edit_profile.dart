@@ -1,17 +1,110 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
-import 'package:jyngles/screens/profile/add_user.dart';
-import 'package:jyngles/screens/profile/view_user.dart';
+import 'package:jyngles/utils/appurl.dart';
 import 'package:jyngles/utils/colors.dart';
+import 'package:jyngles/widgets/custom_bottom_navigation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 
 class EditProfileScreen extends StatefulWidget {
-  const EditProfileScreen({Key? key}) : super(key: key);
+  const EditProfileScreen({
+    Key? key,
+    required this.name,
+    required this.email,
+    required this.phone,
+  }) : super(key: key);
+  final String name;
+  final String email;
+  final String phone;
 
   @override
   State<EditProfileScreen> createState() => _EditProfileScreenState();
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
+  TextEditingController _nameController = TextEditingController();
+  TextEditingController _emailController = TextEditingController();
+  TextEditingController _phoneController = TextEditingController();
+
+  //!Edit Profile
+  Future editProfile(
+    String email,
+    String phone,
+    String username,
+  ) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('token');
+
+    Map<String, String> requestHeaders = {
+      'Accept': 'application/json',
+      'authorization': "Bearer $token"
+    };
+    var request = await http.MultipartRequest(
+      'POST',
+      Uri.parse(AppUrl.editProfile),
+    );
+    request.fields.addAll({
+      'email': email,
+      'phone': phone,
+      'username': username,
+    });
+
+    request.headers.addAll(requestHeaders);
+
+    request.send().then((result) async {
+      http.Response.fromStream(result).then((response) {
+        if (response.statusCode == 200) {
+          var data = jsonDecode(response.body);
+
+          if (data['status_code'] == 200) {
+            var data = jsonDecode(response.body);
+            print(data);
+            print('response.body ' + data.toString());
+
+            Fluttertoast.showToast(
+              msg:
+                  "Profile Updated Successfully\nThe changes will take place on the next time you login",
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.white,
+              textColor: Colors.black,
+              fontSize: 16.0,
+            );
+            Get.offAll(
+              () => const CustomBottomNavigationBar(),
+              transition: Transition.rightToLeft,
+            );
+          } else {
+            print("post have no Data${response.body}");
+            var data = jsonDecode(response.body);
+            Fluttertoast.showToast(
+              msg: data['message'],
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.red,
+              textColor: Colors.white,
+              fontSize: 16.0,
+            );
+          }
+          return response.body;
+        }
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _emailController.dispose();
+    _nameController.dispose();
+    _phoneController.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final height = MediaQuery.of(context).size.height;
@@ -66,9 +159,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'AL Mamun',
-                          style: TextStyle(
+                        Text(
+                          widget.name,
+                          style: const TextStyle(
                             color: Colors.black,
                             fontSize: 20,
                             fontWeight: FontWeight.w600,
@@ -127,10 +220,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       color: Colors.black,
                     ),
                   ),
-                  const TextField(
+                  TextField(
+                    controller: _nameController,
                     decoration: InputDecoration(
                       border: InputBorder.none,
-                      hintText: 'AL Mamun',
+                      hintText: widget.name,
                     ),
                   ),
                   SizedBox(height: height * 0.01),
@@ -157,10 +251,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       color: Colors.black,
                     ),
                   ),
-                  const TextField(
+                  TextField(
+                    controller: _emailController,
                     decoration: InputDecoration(
                       border: InputBorder.none,
-                      hintText: 'abcd@gmail.com',
+                      hintText: widget.email,
                     ),
                   ),
                   SizedBox(height: height * 0.01),
@@ -187,10 +282,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       color: Colors.black,
                     ),
                   ),
-                  const TextField(
+                  TextField(
+                    controller: _phoneController,
                     decoration: InputDecoration(
                       border: InputBorder.none,
-                      hintText: '+8801234567890',
+                      hintText: widget.phone,
                     ),
                   ),
                   SizedBox(height: height * 0.01),
@@ -228,7 +324,24 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   ),
                   ElevatedButton(
                     onPressed: () {
-                      Get.back();
+                      if (_nameController.text.isEmpty ||
+                          _emailController.text.isEmpty ||
+                          _phoneController.text.isEmpty) {
+                        Fluttertoast.showToast(
+                            msg: "Please fill all the fields",
+                            toastLength: Toast.LENGTH_SHORT,
+                            gravity: ToastGravity.BOTTOM,
+                            timeInSecForIosWeb: 1,
+                            backgroundColor: Colors.red,
+                            textColor: Colors.white,
+                            fontSize: 16.0);
+                      } else {
+                        editProfile(
+                          _emailController.text,
+                          _phoneController.text,
+                          _nameController.text,
+                        );
+                      }
                     },
                     child: const Text(
                       'Save',

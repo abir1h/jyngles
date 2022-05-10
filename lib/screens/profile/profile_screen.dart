@@ -261,13 +261,18 @@ class _ProfileScreenState extends State<ProfileScreen>
                     )
                   ],
                 ),
-              ), //! Edit Button
+              ),
+              //! Edit Button
               SizedBox(height: height * 0.05),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: width / 15),
                 child: ElevatedButton(
                   onPressed: () {
-                    Get.to(() => const EditProfileScreen());
+                    Get.to(() => EditProfileScreen(
+                          email: _userEmail ?? '',
+                          name: _userName ?? '',
+                          phone: _userPhone ?? '',
+                        ));
                   },
                   child: const Text(
                     'Edit',
