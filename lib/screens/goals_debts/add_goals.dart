@@ -1,6 +1,11 @@
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'dart:convert';
 
+import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import '../../utils/appurl.dart';
 import '../../utils/colors.dart';
 
 class AddGoals extends StatefulWidget {
@@ -24,6 +29,78 @@ class _AddGoalsState extends State<AddGoals> {
         selectedDate = picked;
       });
     }
+  }
+
+  String title = '';
+  String description = '';
+  String amount = '';
+
+  //!Add debts
+  Future addDebts(
+    String title,
+    String description,
+    String amount,
+    String amount_save,
+    String date,
+  ) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('token');
+
+    Map<String, String> requestHeaders = {
+      'Accept': 'application/json',
+      'authorization': "Bearer $token"
+    };
+    var request = await http.MultipartRequest(
+      'POST',
+      Uri.parse(AppUrl.goalAdd),
+    );
+    request.fields.addAll({
+      'title': title,
+      'description': description,
+      'amount': amount,
+      'amount_save': amount_save,
+      'date': date,
+    });
+
+    request.headers.addAll(requestHeaders);
+
+    request.send().then((result) async {
+      http.Response.fromStream(result).then((response) {
+        if (response.statusCode == 200) {
+          var data = jsonDecode(response.body);
+
+          if (data['status_code'] == 200) {
+            var data = jsonDecode(response.body);
+            print(data);
+            print('response.body ' + data.toString());
+
+            Fluttertoast.showToast(
+              msg: "Successfully added to your debts",
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.white,
+              textColor: Colors.black,
+              fontSize: 16.0,
+            );
+            Get.back();
+          } else {
+            print("post have no Data${response.body}");
+            var data = jsonDecode(response.body);
+            Fluttertoast.showToast(
+              msg: data['message'],
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.red,
+              textColor: Colors.white,
+              fontSize: 16.0,
+            );
+          }
+          return response.body;
+        }
+      });
+    });
   }
 
   @override
@@ -76,13 +153,28 @@ class _AddGoalsState extends State<AddGoals> {
                   SizedBox(height: height * 0.08),
 
                   //!Title
-                  const Text(
-                    'Title',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w400,
-                      color: Colors.white,
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Title',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w400,
+                          color: Colors.white,
+                        ),
+                      ),
+                      Text(
+                        '${selectedDate.toLocal()}.split('
+                                ')[0]'
+                            .split(' ')[0],
+                        style: const TextStyle(
+                          color: Color(0xffD4D4D4),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ],
                   ),
                   SizedBox(height: height * 0.015),
                   Container(
@@ -100,8 +192,11 @@ class _AddGoalsState extends State<AddGoals> {
                         SizedBox(
                           height: height * 0.04,
                           width: width * 0.7,
-                          child: const TextField(
-                            decoration: InputDecoration(
+                          child: TextField(
+                            onChanged: (value) {
+                              title = value;
+                            },
+                            decoration: const InputDecoration(
                               border: InputBorder.none,
                               hintText: 'Enter your title',
                               hintStyle: TextStyle(
@@ -139,8 +234,11 @@ class _AddGoalsState extends State<AddGoals> {
                     child: SizedBox(
                       height: height * 0.04,
                       width: width * 0.7,
-                      child: const TextField(
-                        decoration: InputDecoration(
+                      child: TextField(
+                        onChanged: (value) {
+                          description = value;
+                        },
+                        decoration: const InputDecoration(
                           border: InputBorder.none,
                           hintText: 'Enter your description',
                           hintStyle: TextStyle(
@@ -179,8 +277,11 @@ class _AddGoalsState extends State<AddGoals> {
                         SizedBox(
                           height: height * 0.04,
                           width: width * 0.7,
-                          child: const TextField(
-                            decoration: InputDecoration(
+                          child: TextField(
+                            onChanged: (value) {
+                              amount = value;
+                            },
+                            decoration: const InputDecoration(
                               border: InputBorder.none,
                               hintText: '\$ 0.00',
                               hintStyle: TextStyle(
@@ -197,45 +298,45 @@ class _AddGoalsState extends State<AddGoals> {
                   SizedBox(height: height * 0.015),
 
                   //!Amount saved
-                  const Text(
-                    'Amount Saved',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w400,
-                      color: Colors.white,
-                    ),
-                  ),
-                  SizedBox(height: height * 0.015),
-                  Container(
-                    padding:
-                        const EdgeInsets.only(left: 6, right: 6, bottom: 4),
-                    height: height * 0.05,
-                    width: width,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(2),
-                      color: AppColors.lightBlue,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        SizedBox(
-                          height: height * 0.04,
-                          width: width * 0.7,
-                          child: const TextField(
-                            decoration: InputDecoration(
-                              border: InputBorder.none,
-                              hintText: '\$ 0.00',
-                              hintStyle: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w400,
-                                color: AppColors.disabledTextColor,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  // const Text(
+                  //   'Amount Saved',
+                  //   style: TextStyle(
+                  //     fontSize: 18,
+                  //     fontWeight: FontWeight.w400,
+                  //     color: Colors.white,
+                  //   ),
+                  // ),
+                  // SizedBox(height: height * 0.015),
+                  // Container(
+                  //   padding:
+                  //       const EdgeInsets.only(left: 6, right: 6, bottom: 4),
+                  //   height: height * 0.05,
+                  //   width: width,
+                  //   decoration: BoxDecoration(
+                  //     borderRadius: BorderRadius.circular(2),
+                  //     color: AppColors.lightBlue,
+                  //   ),
+                  //   child: Row(
+                  //     mainAxisAlignment: MainAxisAlignment.start,
+                  //     children: [
+                  //       SizedBox(
+                  //         height: height * 0.04,
+                  //         width: width * 0.7,
+                  //         child: const TextField(
+                  //           decoration: InputDecoration(
+                  //             border: InputBorder.none,
+                  //             hintText: '\$ 0.00',
+                  //             hintStyle: TextStyle(
+                  //               fontSize: 14,
+                  //               fontWeight: FontWeight.w400,
+                  //               color: AppColors.disabledTextColor,
+                  //             ),
+                  //           ),
+                  //         ),
+                  //       ),
+                  //     ],
+                  //   ),
+                  // ),
                   SizedBox(height: height * 0.15),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -273,11 +374,34 @@ class _AddGoalsState extends State<AddGoals> {
 
                       GestureDetector(
                         onTap: () {
-                          showDialog(
-                            context: context,
-                            builder: (context) =>
-                                CustomDialog2(height: height, width: width),
-                          );
+                          // showDialog(
+                          //   context: context,
+                          //   builder: (context) =>
+                          //       CustomDialog2(height: height, width: width),
+                          // );
+                          if (title == '' ||
+                              description == '' ||
+                              amount == '') {
+                            Fluttertoast.showToast(
+                              msg: "Please fill all the fields",
+                              toastLength: Toast.LENGTH_SHORT,
+                              gravity: ToastGravity.BOTTOM,
+                              timeInSecForIosWeb: 1,
+                              backgroundColor: Colors.red,
+                              textColor: Colors.white,
+                              fontSize: 16.0,
+                            );
+                          } else {
+                            addDebts(
+                              title,
+                              description,
+                              amount,
+                              '0',
+                              '${selectedDate.toLocal()}.split('
+                                      ')[0]'
+                                  .split(' ')[0],
+                            );
+                          }
                         },
                         child: Container(
                           height: height * 0.065,

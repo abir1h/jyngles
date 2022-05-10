@@ -25,4 +25,7 @@ class AppUrl {
 
   static const String goalShow = baseURL + 'auth/goal/show';
   static const String debtShow = baseURL + 'auth/debt/show';
+
+  static const String goalAdd = baseURL + 'auth/goal/post';
+  static const String debtAdd = baseURL + 'auth/debt/post';
 }

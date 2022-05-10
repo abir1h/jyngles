@@ -5,7 +5,11 @@ import 'package:get/get.dart';
 import '../../utils/colors.dart';
 
 class EditDebts extends StatefulWidget {
-  const EditDebts({Key? key}) : super(key: key);
+  const EditDebts({
+    Key? key,
+    required this.id,
+  }) : super(key: key);
+  final String id;
 
   @override
   State<EditDebts> createState() => _EditDebtsState();
@@ -136,7 +140,7 @@ class _EditDebtsState extends State<EditDebts> {
                             ),
                           ),
                           const Text(
-                            'Paid',
+                            'Completed',
                             style: TextStyle(
                               color: Colors.white,
                             ),
@@ -173,54 +177,54 @@ class _EditDebtsState extends State<EditDebts> {
 
                   SizedBox(height: height * 0.015),
                   //!Date of pay
-                  const Text(
-                    'Date Of Pay',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w400,
-                      color: Colors.white,
-                    ),
-                  ),
-                  SizedBox(height: height * 0.015),
-                  Container(
-                    padding:
-                        const EdgeInsets.only(left: 6, right: 6, bottom: 4),
-                    height: height * 0.05,
-                    width: width,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(2),
-                      color: AppColors.lightBlue,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        SizedBox(
-                          height: height * 0.04,
-                          width: width * 0.7,
-                          child: TextField(
-                            decoration: InputDecoration(
-                              border: InputBorder.none,
-                              hintText:
-                                  '${selectedDate.toLocal()}.split(' ')[0]'
-                                      .split(' ')[0],
-                              hintStyle: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w400,
-                                color: Colors.black,
-                              ),
-                            ),
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: () {
-                            _selectDate(context);
-                          },
-                          child: const Icon(Icons.calendar_month),
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(height: height * 0.015),
+                  // const Text(
+                  //   'Date Of Pay',
+                  //   style: TextStyle(
+                  //     fontSize: 18,
+                  //     fontWeight: FontWeight.w400,
+                  //     color: Colors.white,
+                  //   ),
+                  // ),
+                  // SizedBox(height: height * 0.015),
+                  // Container(
+                  //   padding:
+                  //       const EdgeInsets.only(left: 6, right: 6, bottom: 4),
+                  //   height: height * 0.05,
+                  //   width: width,
+                  //   decoration: BoxDecoration(
+                  //     borderRadius: BorderRadius.circular(2),
+                  //     color: AppColors.lightBlue,
+                  //   ),
+                  //   child: Row(
+                  //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  //     children: [
+                  //       SizedBox(
+                  //         height: height * 0.04,
+                  //         width: width * 0.7,
+                  //         child: TextField(
+                  //           decoration: InputDecoration(
+                  //             border: InputBorder.none,
+                  //             hintText:
+                  //                 '${selectedDate.toLocal()}.split(' ')[0]'
+                  //                     .split(' ')[0],
+                  //             hintStyle: const TextStyle(
+                  //               fontSize: 14,
+                  //               fontWeight: FontWeight.w400,
+                  //               color: Colors.black,
+                  //             ),
+                  //           ),
+                  //         ),
+                  //       ),
+                  //       GestureDetector(
+                  //         onTap: () {
+                  //           _selectDate(context);
+                  //         },
+                  //         child: const Icon(Icons.calendar_month),
+                  //       ),
+                  //     ],
+                  //   ),
+                  // ),
+                  // SizedBox(height: height * 0.015),
 
                   //!Amount
                   const Text(

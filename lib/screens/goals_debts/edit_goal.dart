@@ -5,7 +5,11 @@ import 'package:get/get.dart';
 import '../../utils/colors.dart';
 
 class EditGoals extends StatefulWidget {
-  const EditGoals({Key? key}) : super(key: key);
+  const EditGoals({
+    Key? key,
+    required this.id,
+  }) : super(key: key);
+  final String id;
 
   @override
   State<EditGoals> createState() => _EditGoalsState();
@@ -64,7 +68,7 @@ class _EditGoalsState extends State<EditGoals> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(height: height * 0.08),
+                  SizedBox(height: height * 0.01),
 
                   //!Status
                   const Text(
@@ -122,7 +126,7 @@ class _EditGoalsState extends State<EditGoals> {
                             ),
                           ),
                           const Text(
-                            'Paid',
+                            'Completed',
                             style: TextStyle(
                               color: Colors.white,
                             ),
@@ -252,6 +256,49 @@ class _EditGoalsState extends State<EditGoals> {
                   //!Amount
                   const Text(
                     'Amount',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.white,
+                    ),
+                  ),
+                  SizedBox(height: height * 0.015),
+                  Container(
+                    padding:
+                        const EdgeInsets.only(left: 6, right: 6, bottom: 4),
+                    height: height * 0.05,
+                    width: width,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(2),
+                      color: AppColors.lightBlue,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          height: height * 0.04,
+                          width: width * 0.7,
+                          child: const TextField(
+                            decoration: InputDecoration(
+                              border: InputBorder.none,
+                              hintText: '\$ 0.00',
+                              hintStyle: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w400,
+                                color: AppColors.disabledTextColor,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  SizedBox(height: height * 0.015),
+
+                  //!Amount saved
+                  const Text(
+                    'Amount Saved',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w400,

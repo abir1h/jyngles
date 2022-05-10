@@ -1,12 +1,20 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jyngles/screens/goals_debts/add_goals.dart';
 import 'package:jyngles/screens/goals_debts/edit_debts.dart';
 import 'package:jyngles/screens/goals_debts/edit_goal.dart';
 import 'package:jyngles/widgets/drawer.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shimmer/shimmer.dart';
+import '../../utils/appurl.dart';
 import '../../utils/colors.dart';
 import '../../widgets/chat_icon_button.dart';
 import '../../widgets/notification_icon_button.dart';
+import 'package:http/http.dart' as http;
+
+import 'add_debt.dart';
 
 class GoalsDebtsScreen extends StatefulWidget {
   const GoalsDebtsScreen({
@@ -23,10 +31,63 @@ class _GoalsDebtsScreenState extends State<GoalsDebtsScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final GlobalKey<ScaffoldState> _key = GlobalKey();
+
+  //!Api starts
+  Future<List<dynamic>>? getdebt;
+  Future<List<dynamic>> getDebt() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('token');
+
+    Map<String, String> requestHeaders = {
+      'Accept': 'application/json',
+      'authorization': "Bearer $token"
+    };
+
+    var response =
+        await http.get(Uri.parse(AppUrl.debtShow), headers: requestHeaders);
+    if (response.statusCode == 200) {
+      print('Get post collected' + response.body);
+      var userData1 = jsonDecode(response.body)['data'];
+      print(userData1);
+      return userData1;
+    } else {
+      print("post have no Data${response.body}");
+      var userData1 = jsonDecode(response.body)['data'];
+      return userData1;
+    }
+  }
+
+  Future<List<dynamic>>? getgoals;
+  Future<List<dynamic>> getGoals() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('token');
+
+    Map<String, String> requestHeaders = {
+      'Accept': 'application/json',
+      'authorization': "Bearer $token"
+    };
+
+    var response =
+        await http.get(Uri.parse(AppUrl.goalShow), headers: requestHeaders);
+    if (response.statusCode == 200) {
+      print('Get post collected' + response.body);
+      var userData1 = jsonDecode(response.body)['data'];
+      print(userData1);
+      return userData1;
+    } else {
+      print("post have no Data${response.body}");
+      var userData1 = jsonDecode(response.body)['data'];
+      return userData1;
+    }
+  }
+  //!Api ends
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(vsync: this, length: 2);
+    getdebt = getDebt();
+    getgoals = getGoals();
   }
 
   @override
@@ -229,27 +290,147 @@ class _GoalsDebtsScreenState extends State<GoalsDebtsScreen>
                               children: [
                                 SizedBox(
                                   height: height,
-                                  child: ListView.builder(
-                                    itemCount: bill.length,
-                                    itemBuilder: (_, int index) {
-                                      return SingleChildScrollView(
-                                        child: GestureDetector(
-                                          onTap: () {
-                                            Get.to(
-                                              const EditDebts(),
-                                              transition:
-                                                  Transition.rightToLeft,
-                                            );
-                                          },
-                                          child: BillList(
-                                            width: width,
-                                            height: height,
-                                            billAmount: amount[index],
-                                            billName: bill[index],
-                                            billTime: date[index],
-                                          ),
-                                        ),
-                                      );
+                                  child: FutureBuilder(
+                                    future: getdebt,
+                                    builder: (_, AsyncSnapshot snapshot) {
+                                      print(snapshot.data);
+                                      switch (snapshot.connectionState) {
+                                        case ConnectionState.waiting:
+                                          return SizedBox(
+                                            width: MediaQuery.of(context)
+                                                .size
+                                                .width,
+                                            height: MediaQuery.of(context)
+                                                    .size
+                                                    .height /
+                                                5,
+                                            child: Shimmer.fromColors(
+                                              baseColor:
+                                                  Colors.grey.withOpacity(0.3),
+                                              highlightColor:
+                                                  Colors.grey.withOpacity(0.1),
+                                              child: ListView.builder(
+                                                itemBuilder: (_, __) => Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          bottom: 8.0),
+                                                  child: Row(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: <Widget>[
+                                                      Container(
+                                                        width: 48.0,
+                                                        height: 48.0,
+                                                        color: Colors.white,
+                                                      ),
+                                                      const Padding(
+                                                        padding: EdgeInsets
+                                                            .symmetric(
+                                                                horizontal:
+                                                                    8.0),
+                                                      ),
+                                                      Expanded(
+                                                        child: Column(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: <Widget>[
+                                                            Container(
+                                                              width: double
+                                                                  .infinity,
+                                                              height: 8.0,
+                                                              color:
+                                                                  Colors.white,
+                                                            ),
+                                                            const Padding(
+                                                              padding: EdgeInsets
+                                                                  .symmetric(
+                                                                vertical: 2.0,
+                                                              ),
+                                                            ),
+                                                            Container(
+                                                              width: double
+                                                                  .infinity,
+                                                              height: 8.0,
+                                                              color:
+                                                                  Colors.white,
+                                                            ),
+                                                            const Padding(
+                                                              padding: EdgeInsets
+                                                                  .symmetric(
+                                                                      vertical:
+                                                                          2.0),
+                                                            ),
+                                                            Container(
+                                                              width: 40.0,
+                                                              height: 8.0,
+                                                              color:
+                                                                  Colors.white,
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      )
+                                                    ],
+                                                  ),
+                                                ),
+                                                itemCount: 10,
+                                              ),
+                                            ),
+                                          );
+                                        default:
+                                          if (snapshot.hasError) {
+                                            Text('Error: ${snapshot.error}');
+                                          } else {
+                                            return snapshot.hasData
+                                                ? Padding(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                      15.0,
+                                                    ),
+                                                    child: ListView.builder(
+                                                      itemCount:
+                                                          snapshot.data.length,
+                                                      itemBuilder:
+                                                          (_, int index) {
+                                                        return InkWell(
+                                                          onTap: () {
+                                                            Get.to(
+                                                              () => EditDebts(
+                                                                  id: snapshot
+                                                                      .data[
+                                                                          index]
+                                                                          ['id']
+                                                                      .toString()),
+                                                              transition:
+                                                                  Transition
+                                                                      .rightToLeft,
+                                                            );
+                                                          },
+                                                          child: BillList(
+                                                            width: width,
+                                                            height: height,
+                                                            billAmount: snapshot
+                                                                .data[index]
+                                                                    ['amount']
+                                                                .toString(),
+                                                            billName: snapshot
+                                                                    .data[index]
+                                                                ['title'],
+                                                            billTime: snapshot
+                                                                            .data[
+                                                                        index]
+                                                                    ['date'] ??
+                                                                '',
+                                                          ),
+                                                        );
+                                                      },
+                                                    ),
+                                                  )
+                                                : const Text('No data');
+                                          }
+                                      }
+                                      return const CircularProgressIndicator();
                                     },
                                   ),
                                 ),
@@ -261,7 +442,7 @@ class _GoalsDebtsScreenState extends State<GoalsDebtsScreen>
                                   child: GestureDetector(
                                     onTap: () {
                                       Get.to(
-                                        const AddGoals(),
+                                        const AddDebts(),
                                         transition: Transition.rightToLeft,
                                       );
                                     },
@@ -322,27 +503,146 @@ class _GoalsDebtsScreenState extends State<GoalsDebtsScreen>
                               children: [
                                 SizedBox(
                                   height: height,
-                                  child: ListView.builder(
-                                    itemCount: bill.length,
-                                    itemBuilder: (_, int index) {
-                                      return SingleChildScrollView(
-                                        child: GestureDetector(
-                                          onTap: () {
-                                            Get.to(
-                                              const EditGoals(),
-                                              transition:
-                                                  Transition.rightToLeft,
-                                            );
-                                          },
-                                          child: BillList(
-                                            width: width,
-                                            height: height,
-                                            billAmount: amount[index],
-                                            billName: bill[index],
-                                            billTime: date[index],
-                                          ),
-                                        ),
-                                      );
+                                  child: FutureBuilder(
+                                    future: getgoals,
+                                    builder: (_, AsyncSnapshot snapshot) {
+                                      print(snapshot.data);
+                                      switch (snapshot.connectionState) {
+                                        case ConnectionState.waiting:
+                                          return SizedBox(
+                                            width: MediaQuery.of(context)
+                                                .size
+                                                .width,
+                                            height: MediaQuery.of(context)
+                                                    .size
+                                                    .height /
+                                                5,
+                                            child: Shimmer.fromColors(
+                                              baseColor:
+                                                  Colors.grey.withOpacity(0.3),
+                                              highlightColor:
+                                                  Colors.grey.withOpacity(0.1),
+                                              child: ListView.builder(
+                                                itemBuilder: (_, __) => Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          bottom: 8.0),
+                                                  child: Row(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: <Widget>[
+                                                      Container(
+                                                        width: 48.0,
+                                                        height: 48.0,
+                                                        color: Colors.white,
+                                                      ),
+                                                      const Padding(
+                                                        padding: EdgeInsets
+                                                            .symmetric(
+                                                                horizontal:
+                                                                    8.0),
+                                                      ),
+                                                      Expanded(
+                                                        child: Column(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: <Widget>[
+                                                            Container(
+                                                              width: double
+                                                                  .infinity,
+                                                              height: 8.0,
+                                                              color:
+                                                                  Colors.white,
+                                                            ),
+                                                            const Padding(
+                                                              padding: EdgeInsets
+                                                                  .symmetric(
+                                                                vertical: 2.0,
+                                                              ),
+                                                            ),
+                                                            Container(
+                                                              width: double
+                                                                  .infinity,
+                                                              height: 8.0,
+                                                              color:
+                                                                  Colors.white,
+                                                            ),
+                                                            const Padding(
+                                                              padding: EdgeInsets
+                                                                  .symmetric(
+                                                                      vertical:
+                                                                          2.0),
+                                                            ),
+                                                            Container(
+                                                              width: 40.0,
+                                                              height: 8.0,
+                                                              color:
+                                                                  Colors.white,
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      )
+                                                    ],
+                                                  ),
+                                                ),
+                                                itemCount: 10,
+                                              ),
+                                            ),
+                                          );
+                                        default:
+                                          if (snapshot.hasError) {
+                                            Text('Error: ${snapshot.error}');
+                                          } else {
+                                            return snapshot.hasData
+                                                ? Padding(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            15.0),
+                                                    child: ListView.builder(
+                                                      itemCount:
+                                                          snapshot.data.length,
+                                                      itemBuilder:
+                                                          (_, int index) {
+                                                        return InkWell(
+                                                          onTap: () {
+                                                            Get.to(
+                                                              () => EditGoals(
+                                                                  id: snapshot
+                                                                      .data[
+                                                                          index]
+                                                                          ['id']
+                                                                      .toString()),
+                                                              transition:
+                                                                  Transition
+                                                                      .rightToLeft,
+                                                            );
+                                                          },
+                                                          child: BillList(
+                                                            width: width,
+                                                            height: height,
+                                                            billAmount: snapshot
+                                                                .data[index]
+                                                                    ['amount']
+                                                                .toString(),
+                                                            billName: snapshot
+                                                                    .data[index]
+                                                                ['title'],
+                                                            billTime: snapshot
+                                                                            .data[
+                                                                        index]
+                                                                    ['date'] ??
+                                                                '',
+                                                          ),
+                                                        );
+                                                      },
+                                                    ),
+                                                  )
+                                                : const Text('No data');
+                                          }
+                                      }
+                                      return const CircularProgressIndicator();
                                     },
                                   ),
                                 ),
