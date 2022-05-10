@@ -1,15 +1,32 @@
+import 'dart:convert';
+
 import 'package:checkbox_grouped/checkbox_grouped.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
-
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../utils/appurl.dart';
 import '../../utils/colors.dart';
 
 class EditGoals extends StatefulWidget {
   const EditGoals({
     Key? key,
     required this.id,
+    required this.status,
+    required this.date,
+    required this.amount,
+    required this.amountSaved,
+    required this.description,
+    required this.title,
   }) : super(key: key);
   final String id;
+  final int status;
+  final String date;
+  final String amount;
+  final String title;
+  final String description;
+  final String amountSaved;
 
   @override
   State<EditGoals> createState() => _EditGoalsState();
@@ -20,6 +37,94 @@ class _EditGoalsState extends State<EditGoals> {
   List<bool> values = [false, false, false];
 
   GroupController controller = GroupController();
+
+  DateTime selectedDate = DateTime.now();
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+        context: context,
+        initialDate: selectedDate,
+        firstDate: DateTime(2015, 8),
+        lastDate: DateTime(2101));
+    if (picked != null && picked != selectedDate) {
+      setState(() {
+        selectedDate = picked;
+      });
+    }
+  }
+
+  TextEditingController titleController = TextEditingController();
+  TextEditingController descriptionController = TextEditingController();
+  TextEditingController amountController = TextEditingController();
+  TextEditingController amountSavedController = TextEditingController();
+
+  //!Edit Transaction
+  Future updateGoals(
+    String title,
+    String description,
+    String amount,
+    String amount_save,
+    String date,
+    String status,
+  ) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('token');
+    Map<String, String> requestHeaders = {
+      'Accept': 'application/json',
+      'authorization': "Bearer $token"
+    };
+    var request = await http.MultipartRequest(
+      'POST',
+      Uri.parse(AppUrl.goalEdit + widget.id),
+    );
+    request.fields.addAll({
+      'title': title,
+      'description': description,
+      'amount': amount,
+      'amount_save': amount_save,
+      'date': date,
+      'status': status,
+    });
+
+    request.headers.addAll(requestHeaders);
+
+    request.send().then((result) async {
+      http.Response.fromStream(result).then((response) {
+        if (response.statusCode == 200) {
+          var data = jsonDecode(response.body);
+
+          if (data['status_code'] == 200) {
+            var data = jsonDecode(response.body);
+            print(data);
+            print('response.body ' + data.toString());
+
+            Fluttertoast.showToast(
+              msg: "Edited Successfully",
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.white,
+              textColor: Colors.black,
+              fontSize: 16.0,
+            );
+            Get.back();
+          } else {
+            print("post have no Data${response.body}");
+            var data = jsonDecode(response.body);
+            Fluttertoast.showToast(
+              msg: data['message'],
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.red,
+              textColor: Colors.white,
+              fontSize: 16.0,
+            );
+          }
+          return response.body;
+        }
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -199,11 +304,12 @@ class _EditGoalsState extends State<EditGoals> {
                         SizedBox(
                           height: height * 0.04,
                           width: width * 0.7,
-                          child: const TextField(
+                          child: TextField(
+                            controller: titleController,
                             decoration: InputDecoration(
                               border: InputBorder.none,
-                              hintText: 'Enter your title',
-                              hintStyle: TextStyle(
+                              hintText: widget.title,
+                              hintStyle: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w400,
                                 color: AppColors.disabledTextColor,
@@ -238,11 +344,12 @@ class _EditGoalsState extends State<EditGoals> {
                     child: SizedBox(
                       height: height * 0.04,
                       width: width * 0.7,
-                      child: const TextField(
+                      child: TextField(
+                        controller: descriptionController,
                         decoration: InputDecoration(
                           border: InputBorder.none,
-                          hintText: 'Enter your description',
-                          hintStyle: TextStyle(
+                          hintText: widget.description,
+                          hintStyle: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w400,
                             color: AppColors.disabledTextColor,
@@ -278,11 +385,12 @@ class _EditGoalsState extends State<EditGoals> {
                         SizedBox(
                           height: height * 0.04,
                           width: width * 0.7,
-                          child: const TextField(
+                          child: TextField(
+                            controller: amountController,
                             decoration: InputDecoration(
                               border: InputBorder.none,
-                              hintText: '\$ 0.00',
-                              hintStyle: TextStyle(
+                              hintText: '\$ ${widget.amount}',
+                              hintStyle: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w400,
                                 color: AppColors.disabledTextColor,
@@ -321,11 +429,12 @@ class _EditGoalsState extends State<EditGoals> {
                         SizedBox(
                           height: height * 0.04,
                           width: width * 0.7,
-                          child: const TextField(
+                          child: TextField(
+                            controller: amountSavedController,
                             decoration: InputDecoration(
                               border: InputBorder.none,
-                              hintText: '\$ 0.00',
-                              hintStyle: TextStyle(
+                              hintText: '\$ ${widget.amountSaved}',
+                              hintStyle: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w400,
                                 color: AppColors.disabledTextColor,
@@ -343,10 +452,30 @@ class _EditGoalsState extends State<EditGoals> {
                     children: [
                       GestureDetector(
                         onTap: () {
-                          showDialog(
-                            context: context,
-                            builder: (context) =>
-                                CustomDialog(height: height, width: width),
+                          // showDialog(
+                          //   context: context,
+                          //   builder: (context) =>
+                          //       CustomDialog(height: height, width: width),
+                          // );
+                          updateGoals(
+                            titleController.text.isEmpty
+                                ? widget.title
+                                : titleController.text,
+                            descriptionController.text.isEmpty
+                                ? widget.description
+                                : descriptionController.text,
+                            amountController.text.isEmpty
+                                ? widget.amount
+                                : amountController.text,
+                            amountSavedController.text.isEmpty
+                                ? widget.amountSaved
+                                : amountSavedController.text,
+                            '${selectedDate.toLocal()}.split('
+                                    ')[0]'
+                                .split(' ')[0],
+                            amountSavedController.text.isEmpty
+                                ? widget.amountSaved
+                                : amountSavedController.text,
                           );
                         },
                         child: Container(

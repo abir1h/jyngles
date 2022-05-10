@@ -1,15 +1,33 @@
+import 'dart:convert';
+
 import 'package:checkbox_grouped/checkbox_grouped.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../utils/appurl.dart';
 import '../../utils/colors.dart';
+import 'package:http/http.dart' as http;
 
 class EditDebts extends StatefulWidget {
   const EditDebts({
     Key? key,
     required this.id,
+    required this.status,
+    required this.date,
+    required this.amount,
+    required this.amountSaved,
+    required this.description,
+    required this.title,
   }) : super(key: key);
   final String id;
+  final int status;
+  final String date;
+  final String amount;
+  final String title;
+  final String description;
+  final String amountSaved;
 
   @override
   State<EditDebts> createState() => _EditDebtsState();
@@ -30,8 +48,83 @@ class _EditDebtsState extends State<EditDebts> {
     }
   }
 
+  TextEditingController titleController = TextEditingController();
+  TextEditingController descriptionController = TextEditingController();
+  TextEditingController amountController = TextEditingController();
+  TextEditingController amountSavedController = TextEditingController();
+
+  //!Edit Transaction
+  Future updateDebts(
+    String title,
+    String description,
+    String amount,
+    String amount_save,
+    String date,
+    String status,
+  ) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('token');
+    Map<String, String> requestHeaders = {
+      'Accept': 'application/json',
+      'authorization': "Bearer $token"
+    };
+    var request = await http.MultipartRequest(
+      'POST',
+      Uri.parse(AppUrl.debtEdit + widget.id),
+    );
+    request.fields.addAll({
+      'title': title,
+      'description': description,
+      'amount': amount,
+      'amount_save': amount_save,
+      'date': date,
+      'status': status,
+    });
+
+    request.headers.addAll(requestHeaders);
+
+    request.send().then((result) async {
+      http.Response.fromStream(result).then((response) {
+        if (response.statusCode == 200) {
+          var data = jsonDecode(response.body);
+
+          if (data['status_code'] == 200) {
+            var data = jsonDecode(response.body);
+            print(data);
+            print('response.body ' + data.toString());
+
+            Fluttertoast.showToast(
+              msg: "Edited Successfully",
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.white,
+              textColor: Colors.black,
+              fontSize: 16.0,
+            );
+            Get.back();
+          } else {
+            print("post have no Data${response.body}");
+            var data = jsonDecode(response.body);
+            Fluttertoast.showToast(
+              msg: data['message'],
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.red,
+              textColor: Colors.white,
+              fontSize: 16.0,
+            );
+          }
+          return response.body;
+        }
+      });
+    });
+  }
+
   // bool value = false;
   List<bool> values = [false, false, false];
+  int selected = 0;
 
   GroupController controller = GroupController();
 
@@ -110,6 +203,7 @@ class _EditDebtsState extends State<EditDebts> {
                                   values[0] = value!;
                                   values[2] = false;
                                   values[1] = false;
+                                  selected = 0;
                                 });
                               },
                             ),
@@ -135,6 +229,7 @@ class _EditDebtsState extends State<EditDebts> {
                                   values[2] = false;
                                   values[0] = false;
                                   values[1] = value!;
+                                  selected = 1;
                                 });
                               },
                             ),
@@ -160,6 +255,7 @@ class _EditDebtsState extends State<EditDebts> {
                                   values[2] = value!;
                                   values[0] = false;
                                   values[1] = false;
+                                  selected = 2;
                                 });
                               },
                             ),
@@ -251,11 +347,13 @@ class _EditDebtsState extends State<EditDebts> {
                         SizedBox(
                           height: height * 0.04,
                           width: width * 0.7,
-                          child: const TextField(
+                          child: TextField(
+                            keyboardType: TextInputType.number,
+                            controller: amountController,
                             decoration: InputDecoration(
                               border: InputBorder.none,
-                              hintText: '\$ 0.00',
-                              hintStyle: TextStyle(
+                              hintText: '\$ ${widget.amount}',
+                              hintStyle: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w400,
                                 color: AppColors.disabledTextColor,
@@ -268,7 +366,7 @@ class _EditDebtsState extends State<EditDebts> {
                   ),
                   SizedBox(height: height * 0.015),
 
-                  //!Description
+                  //!Title
                   const Text(
                     'Title',
                     style: TextStyle(
@@ -290,11 +388,12 @@ class _EditDebtsState extends State<EditDebts> {
                     child: SizedBox(
                       height: height * 0.04,
                       width: width * 0.7,
-                      child: const TextField(
+                      child: TextField(
+                        controller: titleController,
                         decoration: InputDecoration(
                           border: InputBorder.none,
-                          hintText: 'Enter your title',
-                          hintStyle: TextStyle(
+                          hintText: widget.title,
+                          hintStyle: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w400,
                             color: AppColors.disabledTextColor,
@@ -318,7 +417,7 @@ class _EditDebtsState extends State<EditDebts> {
                   Container(
                     padding:
                         const EdgeInsets.only(left: 6, right: 6, bottom: 4),
-                    height: height * 0.2,
+                    height: height * 0.05,
                     width: width,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(2),
@@ -331,11 +430,57 @@ class _EditDebtsState extends State<EditDebts> {
                         SizedBox(
                           height: height * 0.04,
                           width: width * 0.7,
-                          child: const TextField(
+                          child: TextField(
+                            controller: descriptionController,
                             decoration: InputDecoration(
                               border: InputBorder.none,
-                              hintText: 'Enter your Description',
-                              hintStyle: TextStyle(
+                              hintText: widget.description,
+                              hintStyle: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w400,
+                                color: AppColors.disabledTextColor,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  //!Amount saved
+                  SizedBox(height: height * 0.015),
+                  const Text(
+                    'Amount Saved',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.white,
+                    ),
+                  ),
+                  SizedBox(height: height * 0.015),
+                  Container(
+                    padding:
+                        const EdgeInsets.only(left: 6, right: 6, bottom: 4),
+                    height: height * 0.05,
+                    width: width,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(2),
+                      color: AppColors.lightBlue,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          height: height * 0.04,
+                          width: width * 0.7,
+                          child: TextField(
+                            controller: amountSavedController,
+                            keyboardType: TextInputType.number,
+                            decoration: InputDecoration(
+                              border: InputBorder.none,
+                              hintText: widget.amountSaved,
+                              hintStyle: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w400,
                                 color: AppColors.disabledTextColor,
@@ -353,10 +498,30 @@ class _EditDebtsState extends State<EditDebts> {
                     children: [
                       GestureDetector(
                         onTap: () {
-                          showDialog(
-                            context: context,
-                            builder: (context) =>
-                                CustomDialog(height: height, width: width),
+                          // showDialog(
+                          //   context: context,
+                          //   builder: (context) =>
+                          //       CustomDialog(height: height, width: width),
+                          // );
+                          updateDebts(
+                            titleController.text.isEmpty
+                                ? widget.title
+                                : titleController.text,
+                            descriptionController.text.isEmpty
+                                ? widget.description
+                                : descriptionController.text,
+                            amountController.text.isEmpty
+                                ? widget.amount
+                                : amountController.text,
+                            amountSavedController.text.isEmpty
+                                ? widget.amountSaved
+                                : amountSavedController.text,
+                            '${selectedDate.toLocal()}.split('
+                                    ')[0]'
+                                .split(' ')[0],
+                            amountSavedController.text.isEmpty
+                                ? widget.amountSaved
+                                : amountSavedController.text,
                           );
                         },
                         child: Container(

@@ -396,12 +396,39 @@ class _GoalsDebtsScreenState extends State<GoalsDebtsScreen>
                                                         return InkWell(
                                                           onTap: () {
                                                             Get.to(
+                                                              //TODO: Add Debt Page
                                                               () => EditDebts(
-                                                                  id: snapshot
-                                                                      .data[
-                                                                          index]
-                                                                          ['id']
-                                                                      .toString()),
+                                                                id: snapshot
+                                                                    .data[index]
+                                                                        ['id']
+                                                                    .toString(),
+                                                                amount: snapshot
+                                                                    .data[index]
+                                                                        [
+                                                                        'amount']
+                                                                    .toString(),
+                                                                amountSaved: snapshot
+                                                                    .data[index]
+                                                                        [
+                                                                        'amount_save']
+                                                                    .toString(),
+                                                                date: snapshot
+                                                                            .data[
+                                                                        index]
+                                                                    ['date'],
+                                                                description: snapshot
+                                                                            .data[
+                                                                        index][
+                                                                    'description'],
+                                                                status: snapshot
+                                                                            .data[
+                                                                        index]
+                                                                    ['status'],
+                                                                title: snapshot
+                                                                            .data[
+                                                                        index]
+                                                                    ['title'],
+                                                              ),
                                                               transition:
                                                                   Transition
                                                                       .rightToLeft,
@@ -609,11 +636,37 @@ class _GoalsDebtsScreenState extends State<GoalsDebtsScreen>
                                                           onTap: () {
                                                             Get.to(
                                                               () => EditGoals(
-                                                                  id: snapshot
-                                                                      .data[
-                                                                          index]
-                                                                          ['id']
-                                                                      .toString()),
+                                                                id: snapshot
+                                                                    .data[index]
+                                                                        ['id']
+                                                                    .toString(),
+                                                                amount: snapshot
+                                                                    .data[index]
+                                                                        [
+                                                                        'amount']
+                                                                    .toString(),
+                                                                amountSaved: snapshot
+                                                                    .data[index]
+                                                                        [
+                                                                        'amount_save']
+                                                                    .toString(),
+                                                                date: snapshot
+                                                                            .data[
+                                                                        index]
+                                                                    ['date'],
+                                                                description: snapshot
+                                                                            .data[
+                                                                        index][
+                                                                    'description'],
+                                                                status: snapshot
+                                                                            .data[
+                                                                        index]
+                                                                    ['status'],
+                                                                title: snapshot
+                                                                            .data[
+                                                                        index]
+                                                                    ['title'],
+                                                              ),
                                                               transition:
                                                                   Transition
                                                                       .rightToLeft,
