@@ -1,23 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:jyngles/widgets/controller.dart';
+import 'package:syncfusion_flutter_charts/charts.dart';
 
 import '../../utils/colors.dart';
 
 class Comparison extends StatefulWidget {
-  const Comparison({
+   Comparison({
     Key? key,
     required this.monthOrYear,
     required this.fromMonth,
     required this.fromYear,
     required this.toMonth,
     required this.toYear,
+    required this.income1,
+    required this.expence1,
+    required this.saving1,
+    required this.income2,
+    required this.expence2,
+    required this.saving3,
+    required this.income,
+    required this.expense,
+
   }) : super(key: key);
   final String monthOrYear;
   final String fromYear;
   final String toYear;
   final String fromMonth;
   final String toMonth;
+  final String income1;
+  final String expence1;
+  final String saving1;
+  final String income2;
+  final String expence2;
+  final String saving3;
+  final List income;
+  final List expense;
 
   @override
   State<Comparison> createState() => _ComparisonState();
@@ -25,6 +44,7 @@ class Comparison extends StatefulWidget {
 
 class _ComparisonState extends State<Comparison> {
   DateTime selectedDate = DateTime.now();
+  final MyHomePageController? controller = Get.put(MyHomePageController());
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -38,7 +58,14 @@ class _ComparisonState extends State<Comparison> {
       });
     }
   }
-
+  List<_SalesData> data = [
+    _SalesData('Sat', 35),
+    _SalesData('Sun', 28),
+    _SalesData('Mon', 34),
+    _SalesData('Wed', 32),
+    _SalesData('Thu', 40),
+    _SalesData('Fri', 55)
+  ];
   @override
   Widget build(BuildContext context) {
     final height = MediaQuery.of(context).size.height;
@@ -59,7 +86,7 @@ class _ComparisonState extends State<Comparison> {
         child: Scaffold(
           backgroundColor: Colors.transparent,
           appBar: AppBar(
-            backgroundColor: AppColors.lightBlue,
+            backgroundColor: controller!.change_color.value,
             elevation: 0,
             centerTitle: true,
             leading: GestureDetector(
@@ -172,8 +199,8 @@ class _ComparisonState extends State<Comparison> {
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text(
-                                      '\$ 0.00',
+                                     Text(
+                                      widget.income1,
                                       style: TextStyle(
                                         fontSize: 20,
                                         fontWeight: FontWeight.w600,
@@ -199,8 +226,8 @@ class _ComparisonState extends State<Comparison> {
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text(
-                                      '\$ 0.00',
+                                     Text(
+                                      widget.expence1,
                                       style: TextStyle(
                                         fontSize: 20,
                                         fontWeight: FontWeight.w600,
@@ -226,8 +253,8 @@ class _ComparisonState extends State<Comparison> {
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text(
-                                      '\$ 0.00',
+                                     Text(
+                                      widget.saving1,
                                       style: TextStyle(
                                         fontSize: 20,
                                         fontWeight: FontWeight.w600,
@@ -268,8 +295,9 @@ class _ComparisonState extends State<Comparison> {
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text(
-                                      '\$ 0.00',
+                                     Text(
+                                  widget.income2,
+
                                       style: TextStyle(
                                         fontSize: 20,
                                         fontWeight: FontWeight.w600,
@@ -295,8 +323,8 @@ class _ComparisonState extends State<Comparison> {
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text(
-                                      '\$ 0.00',
+                                     Text(
+                                      widget.expence2,
                                       style: TextStyle(
                                         fontSize: 20,
                                         fontWeight: FontWeight.w600,
@@ -322,8 +350,9 @@ class _ComparisonState extends State<Comparison> {
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text(
-                                      '\$ 0.00',
+                                     Text(
+                                  widget.saving3,
+
                                       style: TextStyle(
                                         fontSize: 20,
                                         fontWeight: FontWeight.w600,
@@ -350,14 +379,96 @@ class _ComparisonState extends State<Comparison> {
                   //!Text
                   SizedBox(height: height * 0.04),
 
-                  const Text(
-                    'Expense Summary',
+                   Text(
+                     widget.monthOrYear == 'Monthly Comparison'?'All Month Summary':'All Year Summary',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w500,
                       color: Colors.white,
                     ),
                   ),
+                  type==1?SfCartesianChart(
+                      primaryXAxis: CategoryAxis(),
+                      // Chart title
+                      // Enable legend
+
+                      legend: Legend(),
+                      // Enable tooltip
+                      tooltipBehavior: TooltipBehavior(enable: true),
+                      series: <ChartSeries>[
+                        LineSeries(xAxisName: 'Month',
+                            dataSource: widget.income,
+                            xValueMapper: (datum, index) => widget.income[index]['data_month'],
+                            yValueMapper: (datum, index) => widget.income[index]['sum'],
+                            name: '',
+
+                            // Enable data label
+                            dataLabelSettings: DataLabelSettings(isVisible: true,color: Colors.white))
+                      ]):SfCartesianChart(
+                      primaryXAxis: CategoryAxis(),
+                      // Chart title
+                      // Enable legend
+
+                      legend: Legend(),
+                      // Enable tooltip
+                      tooltipBehavior: TooltipBehavior(enable: true),
+                      series: <ChartSeries>[
+                        LineSeries(xAxisName: 'Month',
+                            dataSource: widget.expense,
+                            xValueMapper: (datum, index) => widget.expense[index]['data_month'],
+                            yValueMapper: (datum, index) => widget.expense[index]['sum'],
+                            name: '',
+
+
+                            // Enable data label
+                            dataLabelSettings: DataLabelSettings(isVisible: true,color: Colors.white))
+                      ]),
+                  Row(
+                    children: [
+                      InkWell(
+                        onTap: (){
+                          setState(() {
+                            type=1;
+                          });
+                        },
+                        child: Row(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Container(
+                                height: 30,
+                                width: 30,
+                                decoration: BoxDecoration(
+                                  color: type==1?Colors.green:Colors.white
+                                ),
+                              ),
+                            ),Text("Income",style: TextStyle(color: Colors.white),)
+                          ],
+                        ),
+                      ),  InkWell(
+                        onTap: (){
+                          setState(() {
+                            type=2;
+                          });
+                        },
+                        child: Row(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Container(
+                                height: 30,
+                                width: 30,
+                                decoration: BoxDecoration(
+                                    color: type==2?Colors.green:Colors.white
+                                ),
+                              ),
+                            ),Text("Expense",style: TextStyle(color: Colors.white),)
+                          ],
+                        ),
+                      ),
+                    ],
+                  )
+
                 ],
               ),
             ),
@@ -366,4 +477,11 @@ class _ComparisonState extends State<Comparison> {
       ),
     );
   }
+var type=1;
+}
+class _SalesData {
+  _SalesData(this.year, this.sales);
+
+  final String year;
+  final double sales;
 }

@@ -3,12 +3,14 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:get/get.dart';
 import 'package:jyngles/screens/calendar/calender_home.dart';
 import 'package:jyngles/screens/goals_debts/goals_debt_screen.dart';
 import 'package:jyngles/screens/reports/reports.dart';
 import '../screens/home/home_screen.dart';
 import '../screens/transactions/transaction.dart';
 import '../utils/colors.dart';
+import 'controller.dart';
 
 class CustomBottomNavigationBar extends StatefulWidget {
   const CustomBottomNavigationBar({Key? key}) : super(key: key);
@@ -21,7 +23,8 @@ class CustomBottomNavigationBar extends StatefulWidget {
 class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
   final PageStorageBucket bucket = PageStorageBucket();
   Widget currentScreen = const HomeScreen();
-  int current_tab = 0;
+  int current_tab = 0;  final MyHomePageController? controller = Get.put(MyHomePageController());
+
   final _formKey = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
@@ -104,7 +107,7 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
                           current_tab == 0
                               ? SvgPicture.asset(
                                   "assets/icons/home.svg",
-                                  color: AppColors.bottomNavColor,
+                                  color:    controller!.change_color.value==Color(0xffDBECFF)?AppColors.bottomNavColor: controller!.change_color.value,
                                 )
                               : SvgPicture.asset(
                                   "assets/icons/home.svg",
@@ -115,7 +118,7 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
                             style: TextStyle(
                               fontSize: 8,
                               color: current_tab == 0
-                                  ? AppColors.bottomNavColor
+                                  ? controller!.change_color.value==Color(0xffDBECFF)?AppColors.bottomNavColor: controller!.change_color.value
                                   : AppColors.textcolor,
                             ),
                           )
@@ -128,7 +131,7 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
                       minWidth: 20,
                       onPressed: () {
                         setState(() {
-                          currentScreen = const Transactions();
+                          currentScreen = const Transactions(selected_index:0 ,);
                           current_tab = 1;
                         });
                       },
@@ -138,7 +141,7 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
                           current_tab == 1
                               ? SvgPicture.asset(
                                   "assets/icons/transaction.svg",
-                                  color: AppColors.bottomNavColor,
+                                  color:controller!.change_color.value==Color(0xffDBECFF)?AppColors.bottomNavColor: controller!.change_color.value,
                                 )
                               : SvgPicture.asset(
                                   "assets/icons/transaction.svg",
@@ -149,7 +152,7 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
                             style: TextStyle(
                               fontSize: 7.5,
                               color: current_tab == 1
-                                  ? AppColors.bottomNavColor
+                                  ? controller!.change_color.value==Color(0xffDBECFF)?AppColors.bottomNavColor: controller!.change_color.value
                                   : AppColors.textcolor,
                             ),
                           ),
@@ -170,9 +173,9 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           current_tab == 2
-                              ? const Icon(
+                              ?  Icon(
                                   Icons.calendar_today_outlined,
-                                  color: AppColors.bottomNavColor,
+                                  color: controller!.change_color.value==Color(0xffDBECFF)?AppColors.bottomNavColor: controller!.change_color.value,
                                 )
                               : SvgPicture.asset(
                                   "assets/icons/calender.svg",
@@ -183,7 +186,7 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
                             style: TextStyle(
                               fontSize: 8,
                               color: current_tab == 2
-                                  ? AppColors.bottomNavColor
+                                  ? controller!.change_color.value==Color(0xffDBECFF)?AppColors.bottomNavColor: controller!.change_color.value
                                   : AppColors.textcolor,
                             ),
                           ),
@@ -197,7 +200,7 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
                       onPressed: () {
                         setState(() {
                           currentScreen = const GoalsDebtsScreen(
-                            fromBottomNav: true,
+                            fromBottomNav: true,selected_index: 0,
                           );
                           current_tab = 3;
                         });
@@ -208,7 +211,7 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
                           current_tab == 3
                               ? SvgPicture.asset(
                                   "assets/icons/goal-debt.svg",
-                                  color: AppColors.bottomNavColor,
+                                  color:controller!.change_color.value==Color(0xffDBECFF)?AppColors.bottomNavColor: controller!.change_color.value,
                                 )
                               : SvgPicture.asset(
                                   "assets/icons/goal-debt.svg",
@@ -219,7 +222,7 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
                             style: TextStyle(
                               fontSize: 8,
                               color: current_tab == 3
-                                  ? AppColors.bottomNavColor
+                                  ?controller!.change_color.value==Color(0xffDBECFF)?AppColors.bottomNavColor: controller!.change_color.value
                                   : AppColors.textcolor,
                             ),
                           )
@@ -242,7 +245,7 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
                           current_tab == 4
                               ? SvgPicture.asset(
                                   "assets/icons/report.svg",
-                                  color: AppColors.bottomNavColor,
+                                  color: controller!.change_color.value==Color(0xffDBECFF)?AppColors.bottomNavColor: controller!.change_color.value,
                                 )
                               : SvgPicture.asset(
                                   "assets/icons/report.svg",
@@ -253,7 +256,7 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
                             style: TextStyle(
                               fontSize: 8,
                               color: current_tab == 4
-                                  ? AppColors.bottomNavColor
+                                  ? controller!.change_color.value==Color(0xffDBECFF)?AppColors.bottomNavColor: controller!.change_color.value
                                   : AppColors.textcolor,
                             ),
                           )

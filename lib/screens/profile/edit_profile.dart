@@ -1,8 +1,12 @@
 import 'dart:convert';
+import 'dart:io';
 
+import 'package:circular_profile_avatar/circular_profile_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:jyngles/screens/profile/profile_screen.dart';
 import 'package:jyngles/utils/appurl.dart';
 import 'package:jyngles/utils/colors.dart';
 import 'package:jyngles/widgets/custom_bottom_navigation.dart';
@@ -28,7 +32,74 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   TextEditingController _nameController = TextEditingController();
   TextEditingController _emailController = TextEditingController();
   TextEditingController _phoneController = TextEditingController();
+  var _image;
+  ImagePicker picker = ImagePicker();
 
+  Future takephoto_camera() async {
+    XFile? image = await picker.pickImage(source: ImageSource.camera);
+
+    setState(() {
+      _image = File(image!.path);
+    });
+    //return image;
+  }
+  var val;
+  Future takephoto_gallary() async {
+    XFile? image = await picker.pickImage(source: ImageSource.gallery);
+
+    setState(() {
+      _image = File(image!.path);
+    });
+    //return image;
+  }
+  Widget bottomSheetProfileEdit() {
+    return Container(
+      height: 100,
+      width: MediaQuery.of(context).size.width,
+      margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      child: Column(
+        children: [
+          Text(
+            "Choose Profile photo",
+            style: TextStyle(
+              fontSize: 20,
+            ),
+          ),
+          SizedBox(
+            height: 10,
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // ignore: deprecated_member_use
+              FlatButton.icon(
+                icon: Icon(Icons.camera),
+                label: Text("Camera"),
+                onPressed: () {
+                  takephoto_camera();
+                  Navigator.pop(context);
+                },
+              ),
+              // ignore: deprecated_member_use
+              FlatButton.icon(
+                  icon: Icon(Icons.image),
+                  label: Text("Gallery"),
+                  onPressed: () {
+                    takephoto_gallary();
+                    Navigator.pop(context);
+                  }),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+  saveprefs(String name) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    prefs.setString('username', name);
+
+  }
   //!Edit Profile
   Future editProfile(
     String email,
@@ -51,6 +122,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       'phone': phone,
       'username': username,
     });
+    if (_image != null) {
+      request.files.add(
+          await http.MultipartFile.fromPath(
+              'image', _image.path));
+    }
 
     request.headers.addAll(requestHeaders);
 
@@ -60,7 +136,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           var data = jsonDecode(response.body);
 
           if (data['status_code'] == 200) {
-            var data = jsonDecode(response.body);
+            var data = jsonDecode(response.body)['data'];
             print(data);
             print('response.body ' + data.toString());
 
@@ -73,9 +149,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               backgroundColor: Colors.white,
               textColor: Colors.black,
               fontSize: 16.0,
-            );
+            );saveprefs(data['username']);
             Get.offAll(
-              () => const CustomBottomNavigationBar(),
+              () => const ProfileScreen(),
               transition: Transition.rightToLeft,
             );
           } else {
@@ -92,6 +168,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             );
           }
           return response.body;
+        }else{
+          print(response.body);
         }
       });
     });
@@ -104,7 +182,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _nameController.dispose();
     _phoneController.dispose();
   }
-
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _phoneController.text=widget.phone;
+    _emailController.text=widget.email;
+    _nameController.text=widget.name;
+  }
+bool submit=false;
   @override
   Widget build(BuildContext context) {
     final height = MediaQuery.of(context).size.height;
@@ -134,74 +220,39 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: width,
-              height: height * 0.23,
-              decoration: const BoxDecoration(
-                color: AppColors.lightBlue,
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(50),
-                  bottomRight: Radius.circular(50),
-                ),
-              ),
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: width / 15),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    const CircleAvatar(
-                      radius: 40,
-                      backgroundImage:
-                          AssetImage('assets/images/profilepic.png'),
-                    ),
-                    SizedBox(width: width * 0.1),
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          widget.name,
-                          style: const TextStyle(
-                            color: Colors.black,
-                            fontSize: 20,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        Row(
-                          children: [
-                            Image.asset('assets/icons/coin.png'),
-                            const Text(' Point: 100'),
-                          ],
-                        )
-                      ],
-                    ),
-                    // Column(
-                    //   mainAxisAlignment: MainAxisAlignment.center,
-                    //   children: [
-                    //     ElevatedButton(
-                    //       onPressed: () {},
-                    //       child: const Text('Add User'),
-                    //       style: ElevatedButton.styleFrom(
-                    //         primary: AppColors.buttonColorBlue,
-                    //       ),
-                    //     ),
-                    //     SizedBox(height: height * 0.015),
-                    //     ElevatedButton(
-                    //       onPressed: () {
-                    //         Get.to(
-                    //           const ViewUser(),
-                    //           transition: Transition.rightToLeft,
-                    //         );
-                    //       },
-                    //       child: const Text('View User'),
-                    //       style: ElevatedButton.styleFrom(
-                    //         primary: AppColors.buttonColorBlue,
-                    //       ),
-                    //     ),
-                    //   ],
-                    // ),
-                  ],
-                ),
+            SizedBox(height: 25,),
+            Center(
+              child: Stack(
+                children: [
+                  CircularProfileAvatar(
+                    'null',
+                    child: _image != null
+                        ? Image.file(
+                      _image,
+                      fit: BoxFit.cover,
+
+                    ):Icon(Icons.person),
+                    borderColor: Colors.blue,
+                    borderWidth: 4,
+                    elevation: 8,
+                    radius: 50,
+                  ),
+                  Positioned(
+                      top: 60,
+                      left: 60,
+                      child: CircleAvatar(
+                          backgroundColor: Colors.blue,
+                          child: IconButton(
+                              icon: Icon(
+                                Icons.camera_alt,
+                              ),
+                              onPressed: () {
+
+                                showModalBottomSheet(
+                                    context: (context),
+                                    builder: (builder) => bottomSheetProfileEdit());
+                              })))
+                ],
               ),
             ),
 

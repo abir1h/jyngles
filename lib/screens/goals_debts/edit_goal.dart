@@ -1,13 +1,17 @@
 import 'dart:convert';
 
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:checkbox_grouped/checkbox_grouped.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:jyngles/widgets/controller.dart';
+import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../utils/appurl.dart';
 import '../../utils/colors.dart';
+import 'goals_debt_screen.dart';
 
 class EditGoals extends StatefulWidget {
   const EditGoals({
@@ -16,7 +20,6 @@ class EditGoals extends StatefulWidget {
     required this.status,
     required this.date,
     required this.amount,
-    required this.amountSaved,
     required this.description,
     required this.title,
   }) : super(key: key);
@@ -26,17 +29,14 @@ class EditGoals extends StatefulWidget {
   final String amount;
   final String title;
   final String description;
-  final String amountSaved;
 
   @override
   State<EditGoals> createState() => _EditGoalsState();
 }
 
-class _EditGoalsState extends State<EditGoals> {
+class _EditGoalsState extends State<EditGoals> with SingleTickerProviderStateMixin{
   // bool value = false;
   List<bool> values = [false, false, false];
-
-  GroupController controller = GroupController();
 
   DateTime selectedDate = DateTime.now();
   Future<void> _selectDate(BuildContext context) async {
@@ -51,7 +51,7 @@ class _EditGoalsState extends State<EditGoals> {
       });
     }
   }
-
+  final MyHomePageController? controller = Get.put(MyHomePageController());
   TextEditingController titleController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
   TextEditingController amountController = TextEditingController();
@@ -62,9 +62,8 @@ class _EditGoalsState extends State<EditGoals> {
     String title,
     String description,
     String amount,
-    String amount_save,
     String date,
-    String status,
+    String status_,
   ) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('token');
@@ -80,9 +79,8 @@ class _EditGoalsState extends State<EditGoals> {
       'title': title,
       'description': description,
       'amount': amount,
-      'amount_save': amount_save,
       'date': date,
-      'status': status,
+      'status': status_,
     });
 
     request.headers.addAll(requestHeaders);
@@ -97,16 +95,115 @@ class _EditGoalsState extends State<EditGoals> {
             print(data);
             print('response.body ' + data.toString());
 
-            Fluttertoast.showToast(
-              msg: "Edited Successfully",
-              toastLength: Toast.LENGTH_LONG,
-              gravity: ToastGravity.BOTTOM,
-              timeInSecForIosWeb: 1,
-              backgroundColor: Colors.white,
-              textColor: Colors.black,
-              fontSize: 16.0,
-            );
-            Get.back();
+            if(status_=='1'){
+              AwesomeDialog(
+                context: context,
+                animType: AnimType.SCALE,
+                dialogType: DialogType.SUCCES,
+                body:Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Lottie.asset(
+                    //   'assets/images/congrats.json',
+                    //   controller: _controller,
+                    //   onLoaded: (composition) {
+                    //     // Configure the AnimationController with the duration of the
+                    //     // Lottie file and start the animation.
+                    //     _controller
+                    //       ..duration = composition.duration
+                    //       ..forward();
+                    //   },
+                    // ),
+                    Text('Congratulation!!',style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold,fontSize: 18),),
+                    Text('You have completed your goal',style: TextStyle(color: Colors.black,fontWeight: FontWeight.w500,fontSize: 14),),
+                    Row(mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('Got ',style: TextStyle(color: Colors.black,fontWeight: FontWeight.w500,fontSize: 14),),
+                        Text(data['point'].toString(),style: TextStyle(color: Colors.black,fontWeight: FontWeight.w500,fontSize: 14),),
+                        Text(' Points',style: TextStyle(color: Colors.black,fontWeight: FontWeight.w500,fontSize: 14),),
+
+                      ],
+                    )
+                  ],
+                ),
+                title: 'This is Ignored',
+                desc:   'This is also Ignored',
+                btnOkOnPress: () {
+                  Get.to(
+                        () => const GoalsDebtsScreen(fromBottomNav: false,selected_index: 1,),
+                    transition: Transition.rightToLeft,
+                  );
+                },
+              ).show();
+            }else if(status_=='0'){
+              AwesomeDialog(
+                context: context,
+                animType: AnimType.SCALE,
+                dialogType: DialogType.WARNING,
+                body:Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Lottie.asset(
+                    //   'assets/images/congrats.json',
+                    //   controller: _controller,
+                    //   onLoaded: (composition) {
+                    //     // Configure the AnimationController with the duration of the
+                    //     // Lottie file and start the animation.
+                    //     _controller
+                    //       ..duration = composition.duration
+                    //       ..forward();
+                    //   },
+                    // ),
+                    Text('Oopps!!',style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold,fontSize: 18),),
+                    Text('Your goal is still pending',style: TextStyle(color: Colors.black,fontWeight: FontWeight.w500,fontSize: 14),),
+
+                  ],
+                ),
+                title: 'This is Ignored',
+                desc:   'This is also Ignored',
+                btnOkOnPress: () {
+                  Get.to(
+                        () => const GoalsDebtsScreen(fromBottomNav: false,selected_index: 1,),
+                    transition: Transition.rightToLeft,
+                  );
+                },
+              )..show();
+            }else{
+              AwesomeDialog(
+                context: context,
+                animType: AnimType.SCALE,
+                dialogType: DialogType.ERROR,
+                body:Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Lottie.asset(
+                    //   'assets/images/congrats.json',
+                    //   controller: _controller,
+                    //   onLoaded: (composition) {
+                    //     // Configure the AnimationController with the duration of the
+                    //     // Lottie file and start the animation.
+                    //     _controller
+                    //       ..duration = composition.duration
+                    //       ..forward();
+                    //   },
+                    // ),
+                    Text('Oopps!!',style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold,fontSize: 18),),
+                    Text('You are failed to complete this goal',style: TextStyle(color: Colors.black,fontWeight: FontWeight.w500,fontSize: 14),),
+
+                  ],
+                ),
+                title: 'This is Ignored',
+                desc:   'This is also Ignored',
+                btnOkOnPress: () {
+                  Get.to(
+                        () => const GoalsDebtsScreen(fromBottomNav: false,selected_index: 1,),
+                    transition: Transition.rightToLeft,
+                  );
+                },
+              )..show();
+
+            }
+
           } else {
             print("post have no Data${response.body}");
             var data = jsonDecode(response.body);
@@ -124,8 +221,76 @@ class _EditGoalsState extends State<EditGoals> {
         }
       });
     });
-  }
+  }  late final AnimationController _controller;
 
+  Future delet(
+
+      ) async {
+    print('goasl');
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('token');
+    Map<String, String> requestHeaders = {
+      'Accept': 'application/json',
+      'authorization': "Bearer $token"
+    };
+    var request = await http.MultipartRequest(
+      'POST',
+      Uri.parse(AppUrl.goal_delete+widget.id),
+    );
+
+
+    request.headers.addAll(requestHeaders);
+
+    request.send().then((result) async {
+      http.Response.fromStream(result).then((response) {
+        if (response.statusCode == 200) {
+          var data = jsonDecode(response.body);
+
+          if (data['status_code'] == 200) {
+            var data = jsonDecode(response.body);
+            print(data);
+            print('response.body ' + data.toString());
+            Get.to(
+                  () => const GoalsDebtsScreen(fromBottomNav: false,selected_index: 1,),
+              transition: Transition.rightToLeft,
+            );
+            Fluttertoast.showToast(
+              msg: "Deleted Successfully",
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.red,
+              textColor: Colors.white,
+              fontSize: 16.0,
+            );
+          } else {
+            print("post have no Data${response.body}");
+            var data = jsonDecode(response.body);
+            Fluttertoast.showToast(
+              msg: data['message'],
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.red,
+              textColor: Colors.white,
+              fontSize: 16.0,
+            );
+          }
+          return response.body;
+        }else{
+          print("post have no Data${response.body}");
+        }
+      });
+    });
+  }  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _controller = AnimationController(vsync: this);
+    selectedDate=DateTime.parse(widget.date);
+
+  }
+ var status;
   @override
   Widget build(BuildContext context) {
     final height = MediaQuery.of(context).size.height;
@@ -201,7 +366,10 @@ class _EditGoalsState extends State<EditGoals> {
                                   values[0] = value!;
                                   values[2] = false;
                                   values[1] = false;
+                                  status=0;
+
                                 });
+                                print(status);
                               },
                             ),
                           ),
@@ -226,7 +394,10 @@ class _EditGoalsState extends State<EditGoals> {
                                   values[2] = false;
                                   values[0] = false;
                                   values[1] = value!;
-                                });
+                                  status=1;
+
+                                });                                print(status);
+
                               },
                             ),
                           ),
@@ -251,7 +422,10 @@ class _EditGoalsState extends State<EditGoals> {
                                   values[2] = value!;
                                   values[0] = false;
                                   values[1] = false;
-                                });
+                                  status=2;
+
+                                });                                print(status);
+
                               },
                             ),
                           ),
@@ -289,6 +463,7 @@ class _EditGoalsState extends State<EditGoals> {
                     ),
                   ),
                   SizedBox(height: height * 0.015),
+
                   Container(
                     padding:
                         const EdgeInsets.only(left: 6, right: 6, bottom: 4),
@@ -322,6 +497,50 @@ class _EditGoalsState extends State<EditGoals> {
                   ),
                   SizedBox(height: height * 0.015),
 
+                  Row(
+                    mainAxisAlignment:
+                    MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Date',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: height * 0.02),
+                  InkWell(
+                    onTap: (){
+                      _selectDate(context);
+                    },
+                    child: Container(
+                      height: height * 0.05,
+                      width: width,
+                      decoration: BoxDecoration(
+                        color: AppColors.textFieldBackground1,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                      child: Padding(
+                        padding:
+                        EdgeInsets.only(left: 15,top: 10),
+                        child:  Text(
+                          '${selectedDate.toLocal()}.split('
+                              ')[0]'
+                              .split(' ')[0],
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  //!Description
+                  SizedBox(height: height * 0.02),
                   //!Description
                   const Text(
                     'Description',
@@ -386,10 +605,11 @@ class _EditGoalsState extends State<EditGoals> {
                           height: height * 0.04,
                           width: width * 0.7,
                           child: TextField(
-                            controller: amountController,
+                            controller: amountController,                                      keyboardType: TextInputType.number,
+
                             decoration: InputDecoration(
                               border: InputBorder.none,
-                              hintText: '\$ ${widget.amount}',
+                              hintText: '${controller!.count.value}'+' ${widget.amount}',
                               hintStyle: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w400,
@@ -405,51 +625,81 @@ class _EditGoalsState extends State<EditGoals> {
                   SizedBox(height: height * 0.015),
 
                   //!Amount saved
-                  const Text(
-                    'Amount Saved',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w400,
-                      color: Colors.white,
-                    ),
-                  ),
-                  SizedBox(height: height * 0.015),
-                  Container(
-                    padding:
-                        const EdgeInsets.only(left: 6, right: 6, bottom: 4),
-                    height: height * 0.05,
-                    width: width,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(2),
-                      color: AppColors.lightBlue,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        SizedBox(
-                          height: height * 0.04,
-                          width: width * 0.7,
-                          child: TextField(
-                            controller: amountSavedController,
-                            decoration: InputDecoration(
-                              border: InputBorder.none,
-                              hintText: '\$ ${widget.amountSaved}',
-                              hintStyle: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w400,
-                                color: AppColors.disabledTextColor,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  // const Text(
+                  //   'Amount Saved',
+                  //   style: TextStyle(
+                  //     fontSize: 18,
+                  //     fontWeight: FontWeight.w400,
+                  //     color: Colors.white,
+                  //   ),
+                  // ),
+                  // SizedBox(height: height * 0.015),
+                  // Container(
+                  //   padding:
+                  //       const EdgeInsets.only(left: 6, right: 6, bottom: 4),
+                  //   height: height * 0.05,
+                  //   width: width,
+                  //   decoration: BoxDecoration(
+                  //     borderRadius: BorderRadius.circular(2),
+                  //     color: AppColors.lightBlue,
+                  //   ),
+                  //   child: Row(
+                  //     mainAxisAlignment: MainAxisAlignment.start,
+                  //     children: [
+                  //       SizedBox(
+                  //         height: height * 0.04,
+                  //         width: width * 0.7,
+                  //         child: TextField(
+                  //           controller: amountSavedController,
+                  //           decoration: InputDecoration(
+                  //             border: InputBorder.none,
+                  //             hintText: '\$ ${widget.amountSaved}',
+                  //             hintStyle: const TextStyle(
+                  //               fontSize: 14,
+                  //               fontWeight: FontWeight.w400,
+                  //               color: AppColors.disabledTextColor,
+                  //             ),
+                  //           ),
+                  //         ),
+                  //       ),
+                  //     ],
+                  //   ),
+                  // ),
 
                   SizedBox(height: height * 0.1),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [                      GestureDetector(
+                      onTap: () {
+                        // showDialog(
+                        //   context: context,
+                        //   builder: (context) =>
+                        //       CustomDialog(height: height, width: width),
+                        // );
+print('tapped');
+                        delet();
+
+                      },
+                      child: Container(
+                        height: height * 0.065,
+                        width: width * 0.3,
+                        decoration: BoxDecoration(
+                          color: AppColors.containerButton,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                        child: const Center(
+                          child: Text(
+                            'Delete',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
                       GestureDetector(
                         onTap: () {
                           // showDialog(
@@ -457,26 +707,36 @@ class _EditGoalsState extends State<EditGoals> {
                           //   builder: (context) =>
                           //       CustomDialog(height: height, width: width),
                           // );
-                          updateGoals(
-                            titleController.text.isEmpty
-                                ? widget.title
-                                : titleController.text,
-                            descriptionController.text.isEmpty
-                                ? widget.description
-                                : descriptionController.text,
-                            amountController.text.isEmpty
-                                ? widget.amount
-                                : amountController.text,
-                            amountSavedController.text.isEmpty
-                                ? widget.amountSaved
-                                : amountSavedController.text,
-                            '${selectedDate.toLocal()}.split('
-                                    ')[0]'
-                                .split(' ')[0],
-                            amountSavedController.text.isEmpty
-                                ? widget.amountSaved
-                                : amountSavedController.text,
-                          );
+                       if(status==null){
+                         Fluttertoast.showToast(
+                           msg: "Please change status to update",
+                           toastLength: Toast.LENGTH_LONG,
+                           gravity: ToastGravity.CENTER,
+                           timeInSecForIosWeb: 1,
+                           backgroundColor: Colors.black54,
+                           textColor: Colors.white,
+                           fontSize: 16.0,
+                         );
+                       }else{
+                         updateGoals(
+                           titleController.text.isEmpty
+                               ? widget.title
+                               : titleController.text,
+                           descriptionController.text.isEmpty
+                               ? widget.description
+                               : descriptionController.text,
+                           amountController.text.isEmpty
+                               ? widget.amount
+                               : amountController.text,
+
+                           '${selectedDate.toLocal()}.split('
+                               ')[0]'
+                               .split(' ')[0],
+                           status.toString(),
+                         );
+                       }
+
+
                         },
                         child: Container(
                           height: height * 0.065,
@@ -507,7 +767,8 @@ class _EditGoalsState extends State<EditGoals> {
       ),
     );
   }
-}
+
+ }
 
 class CustomDialog extends StatelessWidget {
   const CustomDialog({

@@ -6,10 +6,12 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
+import 'package:jyngles/screens/settings/privacy_policy.dart';
 import 'package:jyngles/screens/sign_in_up/otp.dart';
 import 'package:jyngles/screens/sign_in_up/signin.dart';
 import 'package:jyngles/utils/colors.dart';
 import 'package:http/http.dart' as http;
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../utils/appurl.dart';
@@ -30,7 +32,16 @@ class _SignUpPageState extends State<SignUpPage> {
 
   String initialCountry = 'BD';
   var phone;
+  var player_id;
+  func() async {
+    var status = await OneSignal.shared.getPermissionSubscriptionState();
 
+    var playerId = status.subscriptionStatus.userId;
+    print(playerId);
+    setState(() {
+      player_id = playerId;
+    });
+  }
   PhoneNumber number = PhoneNumber(isoCode: 'BD');
   Future registerApi_(String username, String email, String phone,
       String password, String confirm_pass) async {
@@ -46,6 +57,8 @@ class _SignUpPageState extends State<SignUpPage> {
       'email': email,
       'phone': phone,
       'password': password,
+      'player_id':player_id,
+
     });
 
     request.headers.addAll(requestHeaders);
@@ -88,6 +101,7 @@ class _SignUpPageState extends State<SignUpPage> {
       });
     });
   }
+  final _formKey = GlobalKey<FormState>();
 
   saveprefs(String token, String phone, String name) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -96,7 +110,12 @@ class _SignUpPageState extends State<SignUpPage> {
     prefs.setString('phone', phone);
     prefs.setString('name', name);
   }
-
+@override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    func();
+  }
   @override
   Widget build(BuildContext context) {
     final height = MediaQuery.of(context).size.height;
@@ -106,7 +125,7 @@ class _SignUpPageState extends State<SignUpPage> {
         backgroundColor: AppColors.lightBlue,
         elevation: 2,
         title: const Text(
-          'Sing Up',
+          'Sign Up',
           style: TextStyle(
             color: Colors.black,
           ),
@@ -130,24 +149,30 @@ class _SignUpPageState extends State<SignUpPage> {
             //!Username
             Padding(
               padding: EdgeInsets.symmetric(horizontal: width / 15),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: height * 0.02),
-                  Container(
-                    height: height * 0.06,
-                    width: width,
-                    padding: EdgeInsets.only(left: width * 0.04),
-                    color: AppColors.textFieldBackground1,
-                    child: TextField(
-                      controller: usernameController,
-                      decoration: const InputDecoration(
-                        border: InputBorder.none,
-                        hintText: 'Username',
+              child: Form(
+                key:_formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: height * 0.02),
+                    Container(
+                      height: height * 0.06,
+                      width: width,
+                      padding: EdgeInsets.only(left: width * 0.04),
+                      color: AppColors.textFieldBackground1,
+                      child: TextFormField(
+                        controller: usernameController,
+                        validator: (v) =>
+                        v!.isEmpty ? "Field can't be empty" : null,
+                        decoration: const InputDecoration(
+                          border: InputBorder.none,
+                          hintText: 'Username',
+
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
             SizedBox(height: height * 0.01),
@@ -163,8 +188,9 @@ class _SignUpPageState extends State<SignUpPage> {
                     width: width,
                     padding: EdgeInsets.only(left: width * 0.04),
                     color: AppColors.textFieldBackground1,
-                    child: TextField(
-                      controller: emailController,
+                    child: TextFormField(
+                      controller: emailController,  validator: (v) =>
+                    v!.isEmpty ? "Field can't be empty" : null,
                       keyboardType: TextInputType.emailAddress,
                       decoration: const InputDecoration(
                         border: InputBorder.none,
@@ -230,8 +256,9 @@ class _SignUpPageState extends State<SignUpPage> {
                     width: width,
                     padding: EdgeInsets.only(left: width * 0.04),
                     color: AppColors.textFieldBackground1,
-                    child: TextField(
-                      controller: passwordController,
+                    child: TextFormField(
+                      controller: passwordController,  validator: (v) =>
+                    v!.isEmpty ? "Field can't be empty" : null,
                       obscureText: true,
                       decoration: const InputDecoration(
                         border: InputBorder.none,
@@ -255,8 +282,9 @@ class _SignUpPageState extends State<SignUpPage> {
                     width: width,
                     padding: EdgeInsets.only(left: width * 0.04),
                     color: AppColors.textFieldBackground1,
-                    child: TextField(
-                      controller: confirmPasswordController,
+                    child: TextFormField(
+                      controller: confirmPasswordController,  validator: (v) =>
+                    v!.isEmpty ? "Field can't be empty" : null,
                       obscureText: true,
                       decoration: const InputDecoration(
                         border: InputBorder.none,
@@ -274,13 +302,15 @@ class _SignUpPageState extends State<SignUpPage> {
               //TODO:
               onTap: () {
                 if (passwordController.text == confirmPasswordController.text) {
-                  registerApi_(
-                    usernameController.text,
-                    emailController.text,
-                    phone,
-                    passwordController.text,
-                    confirmPasswordController.text,
-                  );
+                 if(_formKey.currentState!.validate()){
+                   registerApi_(
+                     usernameController.text,
+                     emailController.text,
+                     phone,
+                     passwordController.text,
+                     confirmPasswordController.text,
+                   );
+                 }
                 } else {
                   Fluttertoast.showToast(
                     msg: 'Password dosen\'t match',
@@ -318,71 +348,7 @@ class _SignUpPageState extends State<SignUpPage> {
             ),
 
             SizedBox(height: height * 0.04),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                Text(
-                  'Or Continue with',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-              ],
-            ),
 
-            //! Facebook Google
-            SizedBox(height: height * 0.04),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Container(
-                  height: height * 0.05,
-                  width: width * 0.4,
-                  decoration: BoxDecoration(
-                    color: AppColors.buttonColorBlue3,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Image.asset(
-                        'assets/images/fb.png',
-                      ),
-                      const Text(
-                        'Facebook',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  height: height * 0.05,
-                  width: width * 0.4,
-                  decoration: BoxDecoration(
-                    color: AppColors.buttonColorBlue4,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Image.asset('assets/images/google.png'),
-                      SizedBox(width: width * 0.01),
-                      const Text(
-                        'Google',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
 
             SizedBox(height: height * 0.04),
 
@@ -413,6 +379,18 @@ class _SignUpPageState extends State<SignUpPage> {
                 )
               ],
             ),
+            SizedBox(height: height * 0.04),
+
+            Center(
+              child: InkWell(
+                onTap: (){
+                  Get.to(()=>privacy_policy());
+                },
+                child: Text("Privacy Policy",style: TextStyle(
+                    decoration:TextDecoration.underline,
+                    color: Colors.grey),),
+              ),
+            )
           ],
         ),
       ),

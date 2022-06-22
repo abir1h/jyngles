@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:jyngles/screens/calendar/add_calendar.dart';
 import 'package:jyngles/utils/appurl.dart';
 import 'package:jyngles/widgets/controller.dart';
+import 'package:jyngles/widgets/custom_bottom_navigation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -19,14 +20,14 @@ import 'c4.dart';
 import 'package:http/http.dart'as http;
 
 import 'edit_calender.dart';
-class CalenderHome extends StatefulWidget {
-  const CalenderHome({Key? key}) : super(key: key);
+class calender_history extends StatefulWidget {
+  const calender_history({Key? key}) : super(key: key);
 
   @override
-  State<CalenderHome> createState() => _CalenderHomeState();
+  State<calender_history> createState() => _calender_historyState();
 }
 
-class _CalenderHomeState extends State<CalenderHome> {
+class _calender_historyState extends State<calender_history> {
   final GlobalKey<ScaffoldState> _key = GlobalKey();
   String? filter_date;
   Future? slide;
@@ -56,7 +57,7 @@ class _CalenderHomeState extends State<CalenderHome> {
   TextEditingController _controller = TextEditingController();
 
   Timer? _debounce;
-var date;
+  var date;
   _search(String date_) async {
     print(date_);
 
@@ -106,7 +107,7 @@ var date;
     _streamController = StreamController();
     _stream = _streamController!.stream;
     _search( DateFormat('yyyy-MM-dd').format(DateTime.now()));
-  slide=emergency();
+    slide=emergency();
   }
 
   @override
@@ -143,7 +144,6 @@ var date;
           ),
         ),
         key: _key,
-        drawer: CustomDrawer(height: height, width: width),
         backgroundColor: Colors.transparent,
         appBar: AppBar(
           backgroundColor: controller!.change_color.value,
@@ -154,15 +154,10 @@ var date;
               color: Colors.black,
             ),
           ),
-          leading: GestureDetector(
-            onTap: () {
-              _key.currentState!.openDrawer();
-            },
-            child: const Icon(
-              Icons.sort,
-              color: Colors.black,
-            ),
-          ),
+          leading:IconButton(onPressed: (){
+            Get.to(()=>CustomBottomNavigationBar());
+          },icon:Icon(Icons.arrow_back_outlined),color: Colors.black,),
+
           centerTitle: true,
           actions: [
             NotificationIconButton(width: width),
@@ -299,19 +294,19 @@ var date;
                                                         Column(
                                                           crossAxisAlignment: CrossAxisAlignment.start,
                                                           children: [
-                                                            Text(snapshot.data[index]['title'].length > 20 ? '${snapshot.data[index]['title'].substring(0, 12)}......' : snapshot.data[index]['title'],style: TextStyle(color: AppColors.textColor2),),
+                                                            Text(snapshot.data[index]['title'],style: TextStyle(color: AppColors.textColor2),),
                                                             Text(snapshot.data[index]['date'],style: TextStyle(color: AppColors.textColor2),),
                                                             Text(snapshot.data[index]['time'],style: TextStyle(color: AppColors.textColor2),),
                                                           ],
                                                         ),
                                                         Text('${controller!.count.value}'+snapshot.data[index]['amount'].toString(),style: TextStyle(color: AppColors.container2),),
                                                         InkWell(
-                                                          onTap: (){
+                                                            onTap: (){
                                                               Get.to(()=>calendar_edit(ammount: snapshot.data[index]['amount'].toString(),id: snapshot.data[index]['id'].toString(),
 
-                                                              title: snapshot.data[index]['title'].toString(),date: snapshot.data[index]['date'],time_: snapshot.data[index]['time'],
+                                                                title: snapshot.data[index]['title'].toString(),date: snapshot.data[index]['date'],time_: snapshot.data[index]['time'],
                                                               ));
-                                                          },
+                                                            },
                                                             child: Text('Edit',style: TextStyle(color: AppColors.container2),)),
                                                       ],
                                                     )
@@ -466,7 +461,7 @@ var date;
                                       Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          Text(snapshot.data[index]['title'].length > 20 ? '${snapshot.data[index]['title'].substring(0, 12)}......' : snapshot.data[index]['title'],style: TextStyle(color: AppColors.textColor2),),
+                                          Text(snapshot.data[index]['title'],style: TextStyle(color: AppColors.textColor2),),
                                           Text(snapshot.data[index]['time'],style: TextStyle(color: AppColors.textColor2),),
                                         ],
                                       ),

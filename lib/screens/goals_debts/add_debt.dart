@@ -2,11 +2,14 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
+import 'package:jyngles/widgets/controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../utils/appurl.dart';
 import '../../utils/colors.dart';
 import 'package:http/http.dart' as http;
+
+import 'goals_debt_screen.dart';
 
 class AddDebts extends StatefulWidget {
   const AddDebts({Key? key}) : super(key: key);
@@ -17,7 +20,7 @@ class AddDebts extends StatefulWidget {
 
 class _AddDebtsState extends State<AddDebts> {
   DateTime selectedDate = DateTime.now();
-
+  final MyHomePageController? controller = Get.put(MyHomePageController());
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -84,8 +87,10 @@ class _AddDebtsState extends State<AddDebts> {
               textColor: Colors.black,
               fontSize: 16.0,
             );
-            Get.back();
-          } else {
+            Get.to(
+                  () => const GoalsDebtsScreen(fromBottomNav: false,selected_index: 0,),
+              transition: Transition.rightToLeft,
+            );     } else {
             print("post have no Data${response.body}");
             var data = jsonDecode(response.body);
             Fluttertoast.showToast(
@@ -177,10 +182,11 @@ class _AddDebtsState extends State<AddDebts> {
                       ),
                     ],
                   ),
+
                   SizedBox(height: height * 0.015),
                   Container(
                     padding:
-                        const EdgeInsets.only(left: 6, right: 6, bottom: 4),
+                    const EdgeInsets.only(left: 6, right: 6, bottom: 4),
                     height: height * 0.05,
                     width: width,
                     decoration: BoxDecoration(
@@ -195,9 +201,7 @@ class _AddDebtsState extends State<AddDebts> {
                           width: width * 0.7,
                           child: TextField(
                             onChanged: (value) {
-                              setState(() {
-                                title = value;
-                              });
+                              title = value;
                             },
                             decoration: const InputDecoration(
                               border: InputBorder.none,
@@ -213,8 +217,51 @@ class _AddDebtsState extends State<AddDebts> {
                       ],
                     ),
                   ),
-                  SizedBox(height: height * 0.015),
-
+                  SizedBox(height: height * 0.03),
+                  Row(
+                    mainAxisAlignment:
+                    MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Date',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: height * 0.02),
+                  InkWell(
+                    onTap: (){
+                      _selectDate(context);
+                    },
+                    child: Container(
+                      height: height * 0.05,
+                      width: width,
+                      decoration: BoxDecoration(
+                        color: AppColors.textFieldBackground1,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                      child: Padding(
+                        padding:
+                        EdgeInsets.only(left: 15,top: 10),
+                        child:  Text(
+                          '${selectedDate.toLocal()}.split('
+                              ')[0]'
+                              .split(' ')[0],
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  //!Description
+                  SizedBox(height: height * 0.02),
                   //!Description
                   const Text(
                     'Description',
@@ -285,14 +332,16 @@ class _AddDebtsState extends State<AddDebts> {
                           width: width * 0.7,
                           child: TextField(
                             // controller: amountController,
+                            keyboardType: TextInputType.number,
+
                             onChanged: (value) {
                               setState(() {
                                 amount = value;
                               });
                             },
-                            decoration: const InputDecoration(
+                            decoration:  InputDecoration(
                               border: InputBorder.none,
-                              hintText: '\$ 0.00',
+                              hintText: '${controller!.count.value}'+' 0.00',
                               hintStyle: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w400,

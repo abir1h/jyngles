@@ -3,10 +3,12 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
+import 'package:jyngles/widgets/controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import '../../utils/appurl.dart';
 import '../../utils/colors.dart';
+import 'goals_debt_screen.dart';
 
 class AddGoals extends StatefulWidget {
   const AddGoals({Key? key}) : super(key: key);
@@ -34,7 +36,7 @@ class _AddGoalsState extends State<AddGoals> {
   String title = '';
   String description = '';
   String amount = '';
-
+  final MyHomePageController? controller = Get.put(MyHomePageController());
   //!Add debts
   Future addDebts(
     String title,
@@ -75,7 +77,7 @@ class _AddGoalsState extends State<AddGoals> {
             print('response.body ' + data.toString());
 
             Fluttertoast.showToast(
-              msg: "Successfully added to your debts",
+              msg: "Successfully added to your goal",
               toastLength: Toast.LENGTH_LONG,
               gravity: ToastGravity.BOTTOM,
               timeInSecForIosWeb: 1,
@@ -83,8 +85,10 @@ class _AddGoalsState extends State<AddGoals> {
               textColor: Colors.black,
               fontSize: 16.0,
             );
-            Get.back();
-          } else {
+            Get.to(
+                  () => const GoalsDebtsScreen(fromBottomNav: false,selected_index: 1,),
+              transition: Transition.rightToLeft,
+            );          } else {
             print("post have no Data${response.body}");
             var data = jsonDecode(response.body);
             Fluttertoast.showToast(
@@ -164,16 +168,16 @@ class _AddGoalsState extends State<AddGoals> {
                           color: Colors.white,
                         ),
                       ),
-                      Text(
-                        '${selectedDate.toLocal()}.split('
-                                ')[0]'
-                            .split(' ')[0],
-                        style: const TextStyle(
-                          color: Color(0xffD4D4D4),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
+                      // Text(
+                      //   '${selectedDate.toLocal()}.split('
+                      //           ')[0]'
+                      //       .split(' ')[0],
+                      //   style: const TextStyle(
+                      //     color: Color(0xffD4D4D4),
+                      //     fontSize: 12,
+                      //     fontWeight: FontWeight.w400,
+                      //   ),
+                      // ),
                     ],
                   ),
                   SizedBox(height: height * 0.015),
@@ -210,9 +214,51 @@ class _AddGoalsState extends State<AddGoals> {
                       ],
                     ),
                   ),
-                  SizedBox(height: height * 0.015),
-
+                  SizedBox(height: height * 0.03),
+                  Row(
+                    mainAxisAlignment:
+                    MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Date',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: height * 0.02),
+                  InkWell(
+                    onTap: (){
+                      _selectDate(context);
+                    },
+                    child: Container(
+                      height: height * 0.05,
+                      width: width,
+                      decoration: BoxDecoration(
+                        color: AppColors.textFieldBackground1,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                      child: Padding(
+                        padding:
+                        EdgeInsets.only(left: 15,top: 10),
+                        child:  Text(
+                          '${selectedDate.toLocal()}.split('
+                              ')[0]'
+                              .split(' ')[0],
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                   //!Description
+                  SizedBox(height: height * 0.02),
                   const Text(
                     'Description',
                     style: TextStyle(
@@ -277,13 +323,14 @@ class _AddGoalsState extends State<AddGoals> {
                         SizedBox(
                           height: height * 0.04,
                           width: width * 0.7,
-                          child: TextField(
+                          child: TextField(                                      keyboardType: TextInputType.number,
+
                             onChanged: (value) {
                               amount = value;
                             },
-                            decoration: const InputDecoration(
+                            decoration:  InputDecoration(
                               border: InputBorder.none,
-                              hintText: '\$ 0.00',
+                              hintText: '${controller!.count.value}'+' 0.00',
                               hintStyle: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w400,

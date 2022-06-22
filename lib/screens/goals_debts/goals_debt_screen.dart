@@ -1,10 +1,12 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:jyngles/screens/goals_debts/add_goals.dart';
 import 'package:jyngles/screens/goals_debts/edit_debts.dart';
 import 'package:jyngles/screens/goals_debts/edit_goal.dart';
+import 'package:jyngles/widgets/controller.dart';
 import 'package:jyngles/widgets/drawer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shimmer/shimmer.dart';
@@ -17,9 +19,11 @@ import 'package:http/http.dart' as http;
 import 'add_debt.dart';
 
 class GoalsDebtsScreen extends StatefulWidget {
+  final int selected_index;
+
   const GoalsDebtsScreen({
     Key? key,
-    required this.fromBottomNav,
+    required this.fromBottomNav,required this.selected_index
   }) : super(key: key);
   final bool fromBottomNav;
 
@@ -31,6 +35,7 @@ class _GoalsDebtsScreenState extends State<GoalsDebtsScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final GlobalKey<ScaffoldState> _key = GlobalKey();
+  final MyHomePageController? controller = Get.put(MyHomePageController());
 
   //!Api starts
   Future<List<dynamic>>? getdebt;
@@ -85,7 +90,7 @@ class _GoalsDebtsScreenState extends State<GoalsDebtsScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(vsync: this, length: 2);
+    _tabController = TabController(vsync: this, length: 2,initialIndex: widget.selected_index);
     getdebt = getDebt();
     getgoals = getGoals();
   }
@@ -172,10 +177,10 @@ class _GoalsDebtsScreenState extends State<GoalsDebtsScreen>
           drawer: CustomDrawer(height: height, width: width),
           backgroundColor: Colors.transparent,
           appBar: AppBar(
-            backgroundColor: AppColors.lightBlue,
+            backgroundColor: controller!.change_color.value,
             elevation: 2,
             title: Text(
-              'Goals/Debt'.toUpperCase(),
+              widget.fromBottomNav==true?'Goals/Debt'.toUpperCase():"Goals/Debt History".toUpperCase(),
               style: const TextStyle(
                 color: Colors.black,
               ),
@@ -190,7 +195,6 @@ class _GoalsDebtsScreenState extends State<GoalsDebtsScreen>
               ),
             ),
             actions: [
-              ChatIconButton(width: width),
               NotificationIconButton(width: width),
             ],
             centerTitle: true,
@@ -407,15 +411,11 @@ class _GoalsDebtsScreenState extends State<GoalsDebtsScreen>
                                                                         [
                                                                         'amount']
                                                                     .toString(),
-                                                                amountSaved: snapshot
-                                                                    .data[index]
-                                                                        [
-                                                                        'amount_save']
-                                                                    .toString(),
+
                                                                 date: snapshot
                                                                             .data[
                                                                         index]
-                                                                    ['date'],
+                                                                    ['date'].toString(),
                                                                 description: snapshot
                                                                             .data[
                                                                         index][
@@ -449,6 +449,10 @@ class _GoalsDebtsScreenState extends State<GoalsDebtsScreen>
                                                                         index]
                                                                     ['date'] ??
                                                                 '',
+                                                            status: snapshot
+                                                                .data[
+                                                            index]
+                                                            ['status'] ,
                                                           ),
                                                         );
                                                       },
@@ -474,6 +478,8 @@ class _GoalsDebtsScreenState extends State<GoalsDebtsScreen>
                                       );
                                     },
                                     child: const CircleAvatar(
+                                      radius: 25,
+                                      backgroundColor: Colors.white,
                                       child: Icon(Icons.add),
                                     ),
                                   ),
@@ -635,41 +641,37 @@ class _GoalsDebtsScreenState extends State<GoalsDebtsScreen>
                                                         return InkWell(
                                                           onTap: () {
                                                             Get.to(
-                                                              () => EditGoals(
+                                                                  () => EditGoals(
                                                                 id: snapshot
                                                                     .data[index]
-                                                                        ['id']
+                                                                ['id']
                                                                     .toString(),
                                                                 amount: snapshot
                                                                     .data[index]
-                                                                        [
-                                                                        'amount']
+                                                                [
+                                                                'amount']
                                                                     .toString(),
-                                                                amountSaved: snapshot
-                                                                    .data[index]
-                                                                        [
-                                                                        'amount_save']
-                                                                    .toString(),
+
                                                                 date: snapshot
-                                                                            .data[
-                                                                        index]
-                                                                    ['date'],
+                                                                    .data[
+                                                                index]
+                                                                ['date'],
                                                                 description: snapshot
-                                                                            .data[
-                                                                        index][
-                                                                    'description'],
+                                                                    .data[
+                                                                index][
+                                                                'description'],
                                                                 status: snapshot
-                                                                            .data[
-                                                                        index]
-                                                                    ['status'],
+                                                                    .data[
+                                                                index]
+                                                                ['status'],
                                                                 title: snapshot
-                                                                            .data[
-                                                                        index]
-                                                                    ['title'],
+                                                                    .data[
+                                                                index]
+                                                                ['title'],
                                                               ),
                                                               transition:
-                                                                  Transition
-                                                                      .rightToLeft,
+                                                              Transition
+                                                                  .rightToLeft,
                                                             );
                                                           },
                                                           child: BillList(
@@ -686,7 +688,10 @@ class _GoalsDebtsScreenState extends State<GoalsDebtsScreen>
                                                                             .data[
                                                                         index]
                                                                     ['date'] ??
-                                                                '',
+                                                                '',status: snapshot
+                                                              .data[
+                                                          index]
+                                                          ['status'] ,
                                                           ),
                                                         );
                                                       },
@@ -712,6 +717,8 @@ class _GoalsDebtsScreenState extends State<GoalsDebtsScreen>
                                       );
                                     },
                                     child: const CircleAvatar(
+                                      radius: 25,
+                                      backgroundColor: Colors.white,
                                       child: Icon(Icons.add),
                                     ),
                                   ),
@@ -731,44 +738,42 @@ class _GoalsDebtsScreenState extends State<GoalsDebtsScreen>
 }
 
 class BillList extends StatelessWidget {
-  const BillList({
+   BillList({
     Key? key,
     required this.width,
     required this.height,
     required this.billAmount,
     required this.billName,
     required this.billTime,
+    required this.status
   }) : super(key: key);
-
+   final MyHomePageController? controller = Get.put(MyHomePageController());
   final double width;
   final double height;
   final String billName;
   final String billAmount;
   final String billTime;
+  final int status;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: width / 15),
-          child: Column(
-            children: [
-              Padding(
-                padding: EdgeInsets.only(
-                  left: width / 15,
-                  top: height * 0.025,
-                  bottom: height * 0.025,
-                ),
-                child: Row(
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Container(
+            child: Column(
+              children: [
+                Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     //!Bill
+                    Image.asset('assets/images/salary.png',height: 30,width: 30,),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          billName,
+                    billName.length > 20 ? '${billName.substring(0, 12)}......' : billName,
                           style: const TextStyle(
                             color: AppColors.green,
                             fontSize: 18,
@@ -792,7 +797,7 @@ class BillList extends StatelessWidget {
                       children: [
                         //!Amount
                         Text(
-                          '\$ $billAmount',
+                          '${controller!.count.value}'+' $billAmount',
                           style: const TextStyle(
                             color: AppColors.yellow,
                             fontSize: 18,
@@ -801,31 +806,31 @@ class BillList extends StatelessWidget {
                         ),
 
                         //!Pending button
-                        SizedBox(height: height * 0.01),
-                        Container(
-                          height: height * 0.035,
-                          width: width * 0.2,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(2),
-                            color: const Color(0xff0CA2BE),
-                          ),
-                          child: const Center(
-                            child: Text(
-                              'PENDING',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        ),
                       ],
                     ),
+                    Container(
+                      height: height * 0.035,
+                      width: width * 0.2,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(2),
+                        color: const Color(0xff0CA2BE),
+                      ),
+                      child:  Center(
+                        child: Text(
+                          status==0?'PENDING':status==1?'Completed':'Failed',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ),
+
                   ],
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
         //!Horizontal Bar

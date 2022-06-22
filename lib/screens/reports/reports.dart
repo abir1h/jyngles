@@ -1,12 +1,20 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:jyngles/screens/reports/Monthly.dart';
 import 'package:jyngles/screens/reports/comparison.dart';
+import 'package:jyngles/screens/reports/yearly.dart';
+import 'package:jyngles/utils/appurl.dart';
+import 'package:jyngles/widgets/controller.dart';
 import 'package:jyngles/widgets/drawer.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:syncfusion_flutter_charts/charts.dart';
 
 import '../../utils/colors.dart';
 import '../../widgets/chat_icon_button.dart';
 import '../../widgets/notification_icon_button.dart';
-
+import 'package:http/http.dart'as http;
 class ReportScreen extends StatefulWidget {
   const ReportScreen({Key? key}) : super(key: key);
 
@@ -22,6 +30,8 @@ class _ReportScreenState extends State<ReportScreen>
   String month2 = 'January';
   String year1 = '2020';
   String year2 = '2020';
+  var month_from,month_to;
+  final MyHomePageController? controller = Get.put(MyHomePageController());
 
   final GlobalKey<ScaffoldState> _key = GlobalKey();
   @override
@@ -29,12 +39,117 @@ class _ReportScreenState extends State<ReportScreen>
     super.initState();
     _tabController = TabController(vsync: this, length: 3);
   }
-
+var i1,e1,s1,i2,e2,s2;
   @override
   void dispose() {
     _tabController.dispose();
     super.dispose();
   }
+  Monthly_() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('token');
+
+    Map<String, String> requestHeaders = {
+      'Accept': 'application/json',
+      'authorization': "Bearer $token"
+    };
+
+    var response =
+    await http.get(Uri.parse(AppUrl.compare+month_from.toString()+'/'+month_to.toString()+'/'+'m'), headers: requestHeaders);
+    if (response.statusCode == 200) {
+      print('Get post collected' + response.body);
+      var userData1 = jsonDecode(response.body)['data'];
+      var userData2 = jsonDecode(response.body)['dataCompare'];
+      print(userData1);
+      setState(() {
+        i1=userData1['income'];
+        e1=userData1['expense'];
+        s1=userData1['saving'];
+
+        i2=userData2['incomeCompare'];
+        e2=userData2['expenseCompare'];
+        s2=userData2['savingCompare'];
+
+
+      });
+      Get.to(
+        Comparison(
+          monthOrYear: category,
+          fromMonth: month1,
+          fromYear: year1,
+          toMonth: month2,
+          toYear: year2,
+          expence1: e1.toString(),
+          expence2: e2.toString(),
+          income1: i1.toString(),
+          income2: i2.toString(),
+          saving1: s1.toString(),
+          saving3: s2.toString(),
+          expense: jsonDecode(response.body)['expenseCurve'],
+          income: jsonDecode(response.body)['incomeCurve'],
+        ),
+        transition: Transition.rightToLeft,
+      );
+      return userData1;
+    } else {
+      print("post have no Data${response.body}");
+      var userData1 = jsonDecode(response.body)['data'];
+      return userData1;
+    }
+  }
+  yearly_() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('token');
+
+    Map<String, String> requestHeaders = {
+      'Accept': 'application/json',
+      'authorization': "Bearer $token"
+    };
+
+    var response =
+    await http.get(Uri.parse(AppUrl.compare+year1+'/'+year1+'/'+'y'), headers: requestHeaders);
+    if (response.statusCode == 200) {
+      print('Get post collected' + response.body);
+      var userData1 = jsonDecode(response.body)['data'];
+      var userData2 = jsonDecode(response.body)['dataCompare'];
+      print(userData1);
+      setState(() {
+        i1=userData1['income'];
+        e1=userData1['expense'];
+        s1=userData1['saving'];
+
+        i2=userData1['incomeCompare'];
+        e2=userData1['expenseCompare'];
+        s2=userData1['savingCompare'];
+
+
+      });
+      Get.to(
+        Comparison(
+          monthOrYear: category,
+          fromMonth: month1,
+          fromYear: year1,
+          toMonth: month2,
+          toYear: year2,
+          expence1: e1.toString(),
+          expence2: e2.toString(),
+          income1: i1.toString(),
+          income2: i2.toString(),
+          saving1: s1.toString(),
+          saving3: s2.toString(),
+          expense: jsonDecode(response.body)['expenseCurve'],
+          income: jsonDecode(response.body)['incomeCurve'],
+        ),
+        transition: Transition.rightToLeft,
+      );
+      return userData1;
+    } else {
+      print("post have no Data${response.body}");
+      var userData1 = jsonDecode(response.body)['data'];
+      return userData1;
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +173,7 @@ class _ReportScreenState extends State<ReportScreen>
           key: _key,
           drawer: CustomDrawer(height: height, width: width),
           appBar: AppBar(
-            backgroundColor: AppColors.lightBlue,
+            backgroundColor: controller!.change_color.value,
             elevation: 2,
             title: Text(
               'Reports'.toUpperCase(),
@@ -76,7 +191,6 @@ class _ReportScreenState extends State<ReportScreen>
               ),
             ),
             actions: [
-              ChatIconButton(width: width),
               NotificationIconButton(width: width),
             ],
             centerTitle: true,
@@ -149,117 +263,9 @@ class _ReportScreenState extends State<ReportScreen>
                     controller: _tabController,
                     children: [
                       //!Monthly Page
-                      Column(
-                        children: [
-                          SizedBox(height: height * 0.03),
-                          const Text(
-                            'April 2022',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          SizedBox(height: height * 0.03),
-                          Padding(
-                            padding:
-                                EdgeInsets.symmetric(horizontal: width / 15),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                CustomContainer(
-                                  height: height,
-                                  width: width,
-                                  color: AppColors.container1,
-                                  image: 'assets/icons/in.png',
-                                  text: '\$7000.00\nTotal Income',
-                                ),
-                                CustomContainer(
-                                  height: height,
-                                  width: width,
-                                  color: AppColors.container2,
-                                  image: 'assets/icons/out.png',
-                                  text: '\$0.00\nTotal Expense',
-                                ),
-                                CustomContainer(
-                                  height: height,
-                                  width: width,
-                                  color: AppColors.container3,
-                                  image: 'assets/icons/piggibank.png',
-                                  text: '\$4000.00\nTotal Savings',
-                                ),
-                              ],
-                            ),
-                          ),
-                          SizedBox(height: height * 0.1),
-                          const Text(
-                            'You have not entered any data for the selected month',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
-
+Monthly(),
                       //!Yearly page
-                      Column(
-                        children: [
-                          SizedBox(height: height * 0.03),
-                          const Text(
-                            '2022',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          SizedBox(height: height * 0.03),
-                          Padding(
-                            padding:
-                                EdgeInsets.symmetric(horizontal: width / 15),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                CustomContainer(
-                                  height: height,
-                                  width: width,
-                                  color: AppColors.container1,
-                                  image: 'assets/icons/in.png',
-                                  text: '\$14000.00\nTotal Income',
-                                ),
-                                CustomContainer(
-                                  height: height,
-                                  width: width,
-                                  color: AppColors.container2,
-                                  image: 'assets/icons/out.png',
-                                  text: '\$1000.00\nTotal Expense',
-                                ),
-                                CustomContainer(
-                                  height: height,
-                                  width: width,
-                                  color: AppColors.container3,
-                                  image: 'assets/icons/piggibank.png',
-                                  text: '\$13000.00\nTotal Savings',
-                                ),
-                              ],
-                            ),
-                          ),
-                          SizedBox(height: height * 0.1),
-                          const Text(
-                            'You have not entered any data for the selected year',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
-
+yearly(),
                       //!Comparison page
                       Container(
                         color: Colors.white,
@@ -366,7 +372,7 @@ class _ReportScreenState extends State<ReportScreen>
                                         ),
                                       ),
                                       const Text(
-                                        'To',
+                                        'Vs',
                                         style: TextStyle(
                                           fontWeight: FontWeight.w400,
                                           fontSize: 14,
@@ -461,6 +467,8 @@ class _ReportScreenState extends State<ReportScreen>
                                               onChanged: (String? newValue) {
                                                 setState(() {
                                                   month1 = newValue!;
+                                                  month_from=month1=='January'?1:month1=='February'?2:month1=='March'?3:month1=='April'?4:month1=='May'?5:month1=='June'?
+                                                  6:month1=='July'?7:month1=='August'?8:month1=='September'?9:month1=='October'?10:month1=='November'?11:12;
                                                 });
                                               },
                                               items: <String>[
@@ -488,7 +496,7 @@ class _ReportScreenState extends State<ReportScreen>
                                         ),
                                       ),
                                       const Text(
-                                        'To',
+                                        'Vs',
                                         style: TextStyle(
                                           fontWeight: FontWeight.w400,
                                           fontSize: 14,
@@ -513,6 +521,8 @@ class _ReportScreenState extends State<ReportScreen>
                                               onChanged: (String? newValue) {
                                                 setState(() {
                                                   month2 = newValue!;
+                                                  month_to=month2=='January'?1:month2=='February'?2:month2=='March'?3:month2=='April'?4:month2=='May'?5:month2=='June'?
+                                                  6:month2=='July'?7:month2=='August'?8:month2=='September'?9:month2=='October'?10:month2=='November'?11:12;
                                                 });
                                               },
                                               items: <String>[
@@ -546,16 +556,10 @@ class _ReportScreenState extends State<ReportScreen>
                               width: width * 0.3,
                               child: ElevatedButton(
                                 onPressed: () {
-                                  Get.to(
-                                    Comparison(
-                                      monthOrYear: category,
-                                      fromMonth: month1,
-                                      fromYear: year1,
-                                      toMonth: month2,
-                                      toYear: year2,
-                                    ),
-                                    transition: Transition.rightToLeft,
-                                  );
+                                  category=='Yearly Comparison'?yearly_():Monthly_();
+                                  print(month_from);
+                                  print(month_to);
+
                                 },
                                 child: const Text(
                                   'Compare',
@@ -567,7 +571,26 @@ class _ReportScreenState extends State<ReportScreen>
                                   primary: AppColors.buttonColorBlue2,
                                 ),
                               ),
-                            )
+                            ),
+                            // SfCartesianChart(
+                            //     primaryXAxis: CategoryAxis(),
+                            //     // Chart title
+                            //     // Enable legend
+                            //
+                            //     legend: Legend(),
+                            //     // Enable tooltip
+                            //     tooltipBehavior: TooltipBehavior(enable: true),
+                            //     series: <ChartSeries>[
+                            //       LineSeries(xAxisName: 'Month',
+                            //           dataSource: data,
+                            //           xValueMapper: (datum, index) => data[index]['m'],
+                            //           yValueMapper: (datum, index) => data[index]['r'],
+                            //           name: '',
+                            //
+                            //           // Enable data label
+                            //           dataLabelSettings: DataLabelSettings(isVisible: true))
+                            //     ]),
+
                           ],
                         ),
                       ),
@@ -580,9 +603,26 @@ class _ReportScreenState extends State<ReportScreen>
         ),
       ),
     );
-  }
+  }  List data = [
+    {'m':4,'r':95},
+    {'m':5,'r':4933},
+    {'m':6,'r':295},
+    {'m':7,'r':4595},
+  ]; List data2= [
+    {'m':3,'r':3},
+    {'m':3,'r':554},
+    {'m':6,'r':452},
+    {'m':7,'r':455},
+  ];
+  List x=[1,3,45,56,565,65,78,768.87878];
+  List y=[1,4,5,6,7,8,9];
 }
+class _SalesData {
+  _SalesData(this.year, this.sales);
 
+  final String year;
+  final double sales;
+}
 class CustomContainer extends StatelessWidget {
   const CustomContainer({
     Key? key,

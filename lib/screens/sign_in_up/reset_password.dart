@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:jyngles/utils/colors.dart';
+import 'package:jyngles/widgets/controller.dart';
 import 'package:jyngles/widgets/custom_bottom_navigation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -23,6 +24,7 @@ class _ResetPasswordState extends State<ResetPassword> {
   TextEditingController oldPasswordController = TextEditingController();
   TextEditingController newPasswordController = TextEditingController();
   TextEditingController confirmNewPasswordController = TextEditingController();
+  final MyHomePageController? controller = Get.put(MyHomePageController());
 
   Future resetPass(String password, String newPassword) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -91,7 +93,7 @@ class _ResetPasswordState extends State<ResetPassword> {
     final width = MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: AppColors.lightBlue,
+        backgroundColor: controller!.change_color.value,
         elevation: 2,
         title: const Text(
           'Reset Password',

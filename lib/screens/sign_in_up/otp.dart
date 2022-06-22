@@ -28,12 +28,15 @@ class _OTPScreenState extends State<OTPScreen> {
   TextEditingController otp_3 = TextEditingController();
   TextEditingController otp_4 = TextEditingController();
 
-  saveprefs(String token, String phone, String name) async {
+  saveprefs(String token, String phone, String username, String email,String image) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString('token', token);
     prefs.setString('phone', phone);
-    prefs.setString('name', name);
+    prefs.setString('username', username);
+    prefs.setString('email', email);
+    prefs.setString('image', image);
   }
+
 
   Future otpconfirm(String otp) async {
     Map<String, String> requestHeaders = {
@@ -57,6 +60,8 @@ class _OTPScreenState extends State<OTPScreen> {
               data['token']['plainTextToken'],
               data['data']['phone'],
               data['data']['username'],
+              data['data']['email'],
+              data['data']['image']!=null?data['data']['image']:'',
             );
 
             Fluttertoast.showToast(
@@ -236,33 +241,16 @@ class _OTPScreenState extends State<OTPScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Row(
-                            children: [
-                              const Text(
-                                'Expire',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w400,
-                                  color: Color(0xff403F3F),
-                                ),
+
+                          InkWell(
+                            onTap:(){resend_otp();},
+                            child: const Text(
+                              'Resend Code',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w400,
+                                color: Color(0xff9E9E9E),
                               ),
-                              SizedBox(width: width * 0.02),
-                              const Text(
-                                '00:06',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                  color: Color(0xff0DAEC4),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const Text(
-                            'Resend Code',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w400,
-                              color: Color(0xff9E9E9E),
                             ),
                           ),
                         ],
@@ -307,5 +295,62 @@ class _OTPScreenState extends State<OTPScreen> {
         ),
       ),
     );
+  }
+  Future resend_otp(
+
+      ) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('token');
+
+    Map<String, String> requestHeaders = {
+      'Accept': 'application/json',
+      'authorization': "Bearer $token"
+    };
+    var request = await http.MultipartRequest(
+      'POST',
+      Uri.parse(AppUrl.otp_resend),
+    );
+    request.fields.addAll({
+      'phone': widget.phone
+    });
+
+    request.headers.addAll(requestHeaders);
+
+    request.send().then((result) async {
+      http.Response.fromStream(result).then((response) {
+        if (response.statusCode == 200) {
+          var data = jsonDecode(response.body);
+
+          if (data['status_code'] == 200) {
+            var data = jsonDecode(response.body);
+            print(data);
+            print('response.body ' + data.toString());
+
+            Fluttertoast.showToast(
+              msg: "Otp send to your phone",
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.white,
+              textColor: Colors.black,
+              fontSize: 16.0,
+            );
+                   } else {
+            print("post have no Data${response.body}");
+            var data = jsonDecode(response.body);
+            Fluttertoast.showToast(
+              msg: data['message'],
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.red,
+              textColor: Colors.white,
+              fontSize: 16.0,
+            );
+          }
+          return response.body;
+        }
+      });
+    });
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:jyngles/widgets/controller.dart';
 
 import '../../utils/colors.dart';
 
@@ -17,7 +18,7 @@ class _AddTransactions2State extends State<AddTransactions2>
   String category = 'Select Category';
   String category2 = 'Select Category';
   String dropdownValue = '\$';
-
+  final MyHomePageController? controller = Get.put(MyHomePageController());
   @override
   void initState() {
     super.initState();
@@ -152,10 +153,10 @@ class _AddTransactions2State extends State<AddTransactions2>
                                   child: Padding(
                                     padding:
                                         EdgeInsets.only(left: width * 0.015),
-                                    child: const TextField(
+                                    child:  TextField(
                                       decoration: InputDecoration(
                                         border: InputBorder.none,
-                                        hintText: '\$ 0.00',
+                                        hintText: '${controller!.count.value}'+' 0.00',
                                         hintStyle: TextStyle(
                                           color: AppColors.disabledColor,
                                           fontWeight: FontWeight.w400,
@@ -345,10 +346,10 @@ class _AddTransactions2State extends State<AddTransactions2>
                                   child: Padding(
                                     padding:
                                         EdgeInsets.only(left: width * 0.015),
-                                    child: const TextField(
+                                    child:  TextField(
                                       decoration: InputDecoration(
                                         border: InputBorder.none,
-                                        hintText: '\$ 0.00',
+                                        hintText: '${controller!.count.value}'+' 0.00',
                                         hintStyle: TextStyle(
                                           color: AppColors.disabledColor,
                                           fontWeight: FontWeight.w400,

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jyngles/screens/settings/report_bug.dart';
+import 'package:jyngles/widgets/controller.dart';
+import 'package:jyngles/widgets/custom_bottom_navigation.dart';
 import 'package:jyngles/widgets/drawer.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../utils/colors.dart';
-import '../../widgets/chat_icon_button.dart';
 import '../../widgets/notification_icon_button.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -18,6 +20,8 @@ class _SettingsPageState extends State<SettingsPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final GlobalKey<ScaffoldState> _key = GlobalKey();
+  final MyHomePageController? controller = Get.put(MyHomePageController());
+
   @override
   void initState() {
     super.initState();
@@ -55,7 +59,7 @@ class _SettingsPageState extends State<SettingsPage>
           drawer: CustomDrawer(height: height, width: width),
           backgroundColor: Colors.transparent,
           appBar: AppBar(
-            backgroundColor: AppColors.lightBlue,
+            backgroundColor: controller!.change_color.value,
             elevation: 2,
             title: const Text(
               'Settings',
@@ -74,7 +78,7 @@ class _SettingsPageState extends State<SettingsPage>
               ),
             ),
             actions: [
-              ChatIconButton(width: width),
+              // ChatIconButton(width: width),
               NotificationIconButton(width: width),
             ],
             centerTitle: true,
@@ -85,48 +89,53 @@ class _SettingsPageState extends State<SettingsPage>
               child: Column(
                 children: [
                   SizedBox(height: height * 0.08),
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: width * 0.02),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(2),
-                      color: AppColors.lightBlue,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        SizedBox(
-                          width: width * 0.6,
-                          child: const Text(
-                            'Currency',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w400,
-                              fontSize: 18,
-                            ),
-                          ),
-                        ),
-                        DropdownButton<String>(
-                          value: dropdownValue,
-                          icon: const Icon(Icons.keyboard_arrow_down),
-                          style: const TextStyle(color: Colors.black),
-                          onChanged: (String? newValue) {
-                            setState(() {
-                              dropdownValue = newValue!;
-                            });
-                          },
-                          items: <String>['\$', '£', '€', '৳']
-                              .map<DropdownMenuItem<String>>((String value) {
-                            return DropdownMenuItem<String>(
-                              value: value,
-                              child: Text(value),
-                            );
-                          }).toList(),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  //!Contact US
-                  SizedBox(height: height * 0.06),
+                  // Container(
+                  //   padding: EdgeInsets.symmetric(horizontal: width * 0.02),
+                  //   decoration: BoxDecoration(
+                  //     borderRadius: BorderRadius.circular(2),
+                  //     color: AppColors.lightBlue,
+                  //   ),
+                  //   child: Row(
+                  //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  //     children: [
+                  //       SizedBox(
+                  //         width: width * 0.6,
+                  //         child: const Text(
+                  //           'Currency',
+                  //           style: TextStyle(
+                  //             fontWeight: FontWeight.w400,
+                  //             fontSize: 18,
+                  //           ),
+                  //         ),
+                  //       ),
+                  //       DropdownButton<String>(
+                  //         value: dropdownValue,
+                  //         icon: const Icon(Icons.keyboard_arrow_down),
+                  //         style: const TextStyle(color: Colors.black),
+                  //         onChanged: (String? newValue) {
+                  //           setState(() {
+                  //             dropdownValue = newValue!;
+                  //            controller!.change(dropdownValue);
+                  //           });
+                  //           Get.to(()=>
+                  //           const CustomBottomNavigationBar(),
+                  //             transition: Transition.rightToLeft,
+                  //           );
+                  //         },
+                  //         items: <String>['\$', '£', '€', '৳']
+                  //             .map<DropdownMenuItem<String>>((String value) {
+                  //           return DropdownMenuItem<String>(
+                  //             value: value,
+                  //             child: Text(value),
+                  //           );
+                  //         }).toList(),
+                  //       ),
+                  //     ],
+                  //   ),
+                  // ),
+                  //
+                  // //!Contact US
+                  // SizedBox(height: height * 0.06),
                   Row(
                     children: const [
                       Text(
@@ -243,23 +252,34 @@ class _SettingsPageState extends State<SettingsPage>
                       borderRadius: BorderRadius.circular(2),
                       color: AppColors.lightBlue,
                     ),
-                    child: DropdownButton<String>(
-                      value: color,
+                    child:   DropdownButton<String>(
+                      value: type,
                       icon: const Icon(Icons.keyboard_arrow_down),
                       isExpanded: true,
                       style: const TextStyle(color: Colors.black),
                       onChanged: (String? newValue) {
                         setState(() {
-                          dropdownValue = newValue!;
+                          type = newValue!;
+                          var new_color=type=='Blue'?Color(0xffDBECFF):type=='Red'?Color(0xffFF2400):type=='Yellow'?Color(0xfffaea05):Color(0xff3EB489);
+                          selected_color=type=='Blue'?0xffDBECFF:type=='Red'?0xffFF2400:type=='Yellow'?0xfffaea05:0xff3EB489;
+                          controller!.change_color(new_color);
+                          //
+                          // change_color('$new_color');
+                          saveColor();
+                          print(selected_color);
                         });
                       },
-                      items: <String>['Blue', 'Red', 'Yellow', 'Green']
-                          .map<DropdownMenuItem<String>>((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value),
-                        );
-                      }).toList(),
+                      items: <String>[
+                        'Blue',
+                     'Red', 'Yellow', 'Green'
+
+                      ].map<DropdownMenuItem<String>>(
+                              (String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(value),
+                            );
+                          }).toList(),
                     ),
                   ),
 
@@ -295,8 +315,9 @@ class _SettingsPageState extends State<SettingsPage>
                         setState(() {
                           color = newValue!;
                         });
+
                       },
-                      items: <String>['English', 'Española']
+                      items: <String>['English', 'Español']
                           .map<DropdownMenuItem<String>>((String value) {
                         return DropdownMenuItem<String>(
                           value: value,
@@ -313,4 +334,24 @@ class _SettingsPageState extends State<SettingsPage>
       ),
     );
   }
+  change_color(String color)async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString("color", color);
+    print(color);
+  }
+  Future<void> saveColor() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setInt("color", selected_color);
+    get();
+  }
+  int selected_color=0;
+  var items = [
+    'Blue', 'Red', 'Yellow', 'Green'
+  ];
+  var type='Blue';int colorVal = 0;
+get()async{
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  var pr=prefs.getInt("color");
+  print(pr);
+}
 }

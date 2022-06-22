@@ -5,49 +5,41 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:jyngles/screens/transactions/transaction.dart';
 import 'package:jyngles/utils/appurl.dart';
 import 'package:jyngles/widgets/controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../utils/colors.dart';
 
-class EditTransaction extends StatefulWidget {
-  EditTransaction({
+class edit_inc extends StatefulWidget {
+  edit_inc({
     Key? key,
-    required this.isIncome,
     required this.amount,
     required this.category,
-    required this.date,
     required this.desc,
     required this.id,
+    required this.tax,
+    required this.date,
+    required this.catagory_id,
+
   }) : super(key: key);
-  final bool isIncome;
   final String amount;
   String category;
   final String desc;
   final String id;
   final String date;
+  final String tax;
+  final String catagory_id;
 
   @override
-  State<EditTransaction> createState() => _EditTransactionState();
+  State<edit_inc> createState() => _edit_incState();
 }
 
-class _EditTransactionState extends State<EditTransaction> {
+class _edit_incState extends State<edit_inc> {
   String category = 'Select Category';
   bool isInEdit = false;
 
   DateTime selectedDate = DateTime.now();
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-        context: context,
-        initialDate: selectedDate,
-        firstDate: DateTime(2015, 8),
-        lastDate: DateTime(2101));
-    if (picked != null && picked != selectedDate) {
-      setState(() {
-        selectedDate = picked;
-      });
-    }
-  }
   var number_emp;
   Future? slide;
   Future? Expence_lsit;
@@ -84,32 +76,17 @@ class _EditTransactionState extends State<EditTransaction> {
       return userData;
     }
   }
-  Future get_expence_catagory() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString('token');
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+        context: context,
+        initialDate: selectedDate,
+        firstDate: DateTime(2015, 8),
+        lastDate: DateTime(2050));
+    if (picked != null && picked != selectedDate) {
+      setState(() {
+        selectedDate = picked;
 
-    Map<String, String> requestHeaders = {
-      'Accept': 'application/json',
-      'authorization': "Bearer $token"
-
-    };
-
-    var response =
-    await http.get(Uri.parse(AppUrl.catagory+'expense'), headers: requestHeaders);
-    if (response.statusCode == 200) {
-      var userData = jsonDecode(response.body)['data'];
-      print("Get Profile has Data");
-      print(userData);
-      print('pera');
-
-      return userData;
-    } else {
-      var userData = jsonDecode(response.body)['data'];
-
-      print("Get Profile No Data${response.body}");
-      print('pera');
-
-      return userData;
+      });
     }
   }
 
@@ -119,8 +96,9 @@ class _EditTransactionState extends State<EditTransaction> {
   TextEditingController descriptionController = TextEditingController();
 
   //!Edit Transaction
-  Future editIncome(String date, String amount, String category_id,
-      String title, String description) async {
+  Future editIncome(String date, String amount, String category_id,String tax,
+     String description) async {
+    print(amount+category_id+tax+description);
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('token');
     Map<String, String> requestHeaders = {
@@ -135,8 +113,9 @@ class _EditTransactionState extends State<EditTransaction> {
       'date': date,
       'amount': amount,
       'category_id': category_id,
-      'title': title,
       'description': description,
+      'tax':tax
+
     });
 
     request.headers.addAll(requestHeaders);
@@ -147,6 +126,9 @@ class _EditTransactionState extends State<EditTransaction> {
           var data = jsonDecode(response.body);
 
           if (data['status_code'] == 200) {
+            setState(() {
+              submitted=false;
+            });
             var data = jsonDecode(response.body);
             print(data);
             print('response.body ' + data.toString());
@@ -160,8 +142,10 @@ class _EditTransactionState extends State<EditTransaction> {
               textColor: Colors.black,
               fontSize: 16.0,
             );
-            Get.back();
-          } else {
+Navigator.push(context, MaterialPageRoute(builder: (_)=>Transactions(selected_index: 0,)));          } else {
+            setState(() {
+              submitted=false;
+            });
             print("post have no Data${response.body}");
             var data = jsonDecode(response.body);
             Fluttertoast.showToast(
@@ -241,9 +225,9 @@ class _EditTransactionState extends State<EditTransaction> {
       });
     });
   }
-  final MyHomePageController? controller = Get.put(MyHomePageController());
-  //!DELETE API
 
+  //!DELETE API
+  final MyHomePageController? controller = Get.put(MyHomePageController());
   Future deleteIncome(String id) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('token');
@@ -267,7 +251,7 @@ class _EditTransactionState extends State<EditTransaction> {
         textColor: Colors.black,
         fontSize: 16.0,
       );
-      Get.back();
+      Navigator.push(context, MaterialPageRoute(builder: (_)=>Transactions(selected_index: 0,)));
     } else {
       print(response.body);
       var data = jsonDecode(response.body);
@@ -324,12 +308,18 @@ class _EditTransactionState extends State<EditTransaction> {
 
   List<bool> values = [false, false];
 
-@override
+  @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    print(widget.catagory_id);
+    amountController.text=widget.amount;
+    descriptionController.text=widget.desc;
+    c_name=widget.category;
+    selectedDate=DateTime.parse(widget.date);
+    _mySelection='';
+    tax=widget.tax=='0'?'Exclude Tax':'Include Tax';
     myFuture=get_notification();
-    Expence_lsit=get_expence_catagory();
   }
   @override
   Widget build(BuildContext context) {
@@ -364,7 +354,7 @@ class _EditTransactionState extends State<EditTransaction> {
               ),
             ),
             title: Text(
-              widget.isIncome ? 'Edit Income' : 'Edit Expense',
+              'Edit Income' ,
               style: const TextStyle(
                 color: Colors.black,
                 fontSize: 18,
@@ -379,120 +369,7 @@ class _EditTransactionState extends State<EditTransaction> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SizedBox(height: height * 0.01),
-                  //!Checkbox group
-                  // Row(
-                  //   children: [
-                  //     const Text(
-                  //       'Type: ',
-                  //       style: TextStyle(
-                  //         fontSize: 18,
-                  //         fontWeight: FontWeight.w400,
-                  //         color: Colors.white,
-                  //       ),
-                  //     ),
-                  //     Row(
-                  //       children: [
-                  //         Theme(
-                  //           data: Theme.of(context).copyWith(
-                  //             unselectedWidgetColor: Colors.white,
-                  //           ),
-                  //           child: Checkbox(
-                  //             value: values[0],
-                  //             onChanged: (bool? value) {
-                  //               setState(() {
-                  //                 values[0] = value!;
-                  //                 values[1] = false;
-                  //               });
-                  //             },
-                  //           ),
-                  //         ),
-                  //         const Text(
-                  //           'Expense',
-                  //           style: TextStyle(
-                  //             color: Colors.white,
-                  //           ),
-                  //         ),
-                  //       ],
-                  //     ),
-                  //     Row(
-                  //       children: [
-                  //         Theme(
-                  //           data: Theme.of(context).copyWith(
-                  //             unselectedWidgetColor: Colors.white,
-                  //           ),
-                  //           child: Checkbox(
-                  //             value: values[1],
-                  //             onChanged: (bool? value) {
-                  //               setState(() {
-                  //                 values[0] = false;
-                  //                 values[1] = value!;
-                  //               });
-                  //             },
-                  //           ),
-                  //         ),
-                  //         const Text(
-                  //           'Income',
-                  //           style: TextStyle(
-                  //             color: Colors.white,
-                  //           ),
-                  //         ),
-                  //       ],
-                  //     ),
-                  //   ],
-                  // ),
 
-                  SizedBox(height: height * 0.015),
-                  //!Date of pay
-                  // const Text(
-                  //   'Date',
-                  //   style: TextStyle(
-                  //     fontSize: 18,
-                  //     fontWeight: FontWeight.w400,
-                  //     color: Colors.white,
-                  //   ),
-                  // ),
-                  // SizedBox(height: height * 0.015),
-                  // Container(
-                  //   padding:
-                  //       const EdgeInsets.only(left: 6, right: 6, bottom: 4),
-                  //   height: height * 0.05,
-                  //   width: width,
-                  //   decoration: BoxDecoration(
-                  //     borderRadius: BorderRadius.circular(2),
-                  //     color: AppColors.lightBlue,
-                  //   ),
-                  //   child: Row(
-                  //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  //     children: [
-                  //       SizedBox(
-                  //         height: height * 0.04,
-                  //         width: width * 0.7,
-                  //         child: TextField(
-                  //           decoration: InputDecoration(
-                  //             border: InputBorder.none,
-                  //             hintText:
-                  //                 '${selectedDate.toLocal()}.split(' ')[0]'
-                  //                     .split(' ')[0],
-                  //             hintStyle: const TextStyle(
-                  //               fontSize: 14,
-                  //               fontWeight: FontWeight.w400,
-                  //               color: Colors.black,
-                  //             ),
-                  //           ),
-                  //         ),
-                  //       ),
-                  //       GestureDetector(
-                  //         onTap: () {
-                  //           _selectDate(context);
-                  //         },
-                  //         child: const Icon(Icons.calendar_month),
-                  //       ),
-                  //     ],
-                  //   ),
-                  // ),
-                  // SizedBox(height: height * 0.015),
-
-                  //!Amount
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -504,20 +381,12 @@ class _EditTransactionState extends State<EditTransaction> {
                           color: Colors.white,
                         ),
                       ),
-                      Text(
-                        '${selectedDate.toLocal()}.split(' ')[0]'.split(' ')[0],
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w300,
-                          color: Color(0xffD4D4D4),
-                        ),
-                      )
                     ],
                   ),
                   SizedBox(height: height * 0.015),
                   Container(
                     padding:
-                        const EdgeInsets.only(left: 6, right: 6, bottom: 4),
+                    const EdgeInsets.only(left: 6, right: 6, bottom: 4),
                     height: height * 0.05,
                     width: width,
                     decoration: BoxDecoration(
@@ -528,25 +397,79 @@ class _EditTransactionState extends State<EditTransaction> {
                       height: height * 0.04,
                       width: width * 0.7,
                       child: TextField(
-                        controller: amountController,                                      keyboardType: TextInputType.number,
-
+                        controller: amountController,
                         decoration: InputDecoration(
-                          enabled: isInEdit ? true : false,
                           border: InputBorder.none,
                           hintText: '${controller!.count.value}'+' ${widget.amount.toString()}',
                           hintStyle: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w400,
-                            color: isInEdit
-                                ? Colors.black
-                                : AppColors.disabledTextColor,
+                            color: Colors.black
                           ),
                         ),
                       ),
                     ),
                   ),
-                  SizedBox(height: height * 0.015),
                   //!Category
+                  SizedBox(height: height * 0.03),
+                  Row(
+                    mainAxisAlignment:
+                    MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Date',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: height * 0.02),
+                  InkWell(
+                    onTap: (){
+                      _selectDate(context);
+                    },
+                    child:  Container(
+                      height: height * 0.05,
+                      width: width,
+                      decoration: BoxDecoration(
+                        color: AppColors.textFieldBackground1,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                      child: Padding(
+                        padding:
+                        EdgeInsets.only(left: 15,top: 7,right: 15),
+                        child:  Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              '${selectedDate.toLocal()}.split('
+                                  ')[0]'
+                                  .split(' ')[0],
+                              style: const TextStyle(
+                                color: Colors.black,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                            Text(
+                              'Tap here',
+                              style: const TextStyle(
+                                color: Colors.black,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  //!Category
+                  SizedBox(height: height * 0.03),                  //!Category
                   const Text(
                     'Category',
                     style: TextStyle(
@@ -556,50 +479,7 @@ class _EditTransactionState extends State<EditTransaction> {
                     ),
                   ),
                   SizedBox(height: height * 0.015),
-                  // Container(
-                  //   padding:
-                  //       const EdgeInsets.only(left: 6, right: 6, bottom: 4),
-                  //   height: height * 0.05,
-                  //   width: width,
-                  //   decoration: BoxDecoration(
-                  //     borderRadius: BorderRadius.circular(2),
-                  //     color: AppColors.lightBlue,
-                  //   ),
-                  //   child: AbsorbPointer(
-                  //     absorbing: isInEdit ? false : true,
-                  //     child: DropdownButton<String>(
-                  //       value: widget.category,
-                  //       icon: const Icon(Icons.keyboard_arrow_down),
-                  //       isExpanded: true,
-                  //       style: TextStyle(
-                  //         color:
-                  //             isInEdit ? Colors.black : AppColors.disabledColor,
-                  //       ),
-                  //       onChanged: (String? newValue) {
-                  //         setState(() {
-                  //           widget.category =
-                  //               newValue!; //TODO changed here. needs to recheck
-                  //         });
-                  //       },
-                  //       items: <String>[
-                  //         '${widget.category} ',
-                  //         'Salary',
-                  //         'Income from rent',
-                  //         'Interest',
-                  //         'Pension',
-                  //         'Work on demand',
-                  //         'Tax return',
-                  //         'Coupon',
-                  //       ].map<DropdownMenuItem<String>>((String value) {
-                  //         return DropdownMenuItem<String>(
-                  //           value: value,
-                  //           child: Text(value),
-                  //         );
-                  //       }).toList(),
-                  //     ),
-                  //   ),
-                  // ),
-                  widget.isIncome?                                Container(
+                                               Container(
                     width: width,
                     decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(10.0),
@@ -663,68 +543,6 @@ class _EditTransactionState extends State<EditTransaction> {
                               : Center(child:CircularProgressIndicator())
                               : Container();
                         }),
-                  ):                                Container(
-                    width: width,
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10.0),
-                        color: Colors.white,
-                        border: Border.all()),
-                    child: FutureBuilder(
-                        future: Expence_lsit,
-                        builder: (context, snapshot) {
-
-                          shots2 = (snapshot.data ?? []) as List;
-                          return snapshot.hasData ? shots != null
-                              ? Container(
-                            child: new DropdownButton<String>(
-                              isExpanded: true,
-                              hint: expence_selection == null
-                                  ? Text(" Select Catagory",
-                                  style: TextStyle(
-                                      fontWeight:
-                                      FontWeight.bold,
-                                      fontSize: 14,
-                                      color: Colors.grey))
-                                  : Text(' '+expence_value!,
-                                  style: TextStyle(
-                                      fontWeight:
-                                      FontWeight.bold,
-                                      fontSize: 14,
-                                      color: Colors.grey)),
-                              items: shots2
-                                  .map<
-                                  DropdownMenuItem<
-                                      String>>((value) =>
-                              new DropdownMenuItem<String>(
-                                value:
-                                value["id"].toString() +
-                                    "_" +
-                                    value['name'],
-                                child: new Text(
-                                  value['name'],
-                                ),
-                              ))
-                                  .toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  expence_selection = value;
-                                  val = expence_selection!.split('_');
-                                  print(val[0] + " NEw value");
-                                  print(val[1] + " class value");
-                                  expence_id = val[0];
-                                  expence_value = val[1];
-
-                                });
-                                print(_mySelection);
-                              },
-                              underline:
-                              DropdownButtonHideUnderline(
-                                  child: Container()),
-                            ),
-                          )
-                              : Center(child:CircularProgressIndicator())
-                              : Container();
-                        }),
                   ),
 
                   SizedBox(height: height * 0.015),
@@ -741,7 +559,7 @@ class _EditTransactionState extends State<EditTransaction> {
                   SizedBox(height: height * 0.015),
                   Container(
                     padding:
-                        const EdgeInsets.only(left: 6, right: 6, bottom: 4),
+                    const EdgeInsets.only(left: 6, right: 6, bottom: 4),
                     height: height * 0.2,
                     width: width,
                     decoration: BoxDecoration(
@@ -757,16 +575,13 @@ class _EditTransactionState extends State<EditTransaction> {
                           width: width * 0.7,
                           child: TextField(
                             controller: descriptionController,
-                            enabled: isInEdit ? true : false,
                             decoration: InputDecoration(
                               border: InputBorder.none,
                               hintText: '${widget.desc}',
                               hintStyle: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w400,
-                                color: isInEdit
-                                    ? Colors.black
-                                    : AppColors.disabledTextColor,
+                                color: Colors.black
                               ),
                             ),
                           ),
@@ -811,142 +626,140 @@ class _EditTransactionState extends State<EditTransaction> {
 
 
                   SizedBox(height: height * 0.08),
-                  isInEdit
-                      ? Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            //!Delete
-                            InkWell(
-                              onTap: () {
-                                // showDialog(
-                                //   context: context,
-                                //   builder: (context) => CustomDialog(
-                                //     height: height,
-                                //     width: width,
-                                //     mgs: 'Update',
-                                //   ),
-                                // );
-                                widget.isIncome
-                                    ? editIncome(
-                                        '${selectedDate.toLocal()}.split('
-                                                ')[0]'
-                                            .split(' ')[0],
-                                        amountController.text.isEmpty
-                                            ? widget.amount
-                                            : amountController.text,
-                                       income_id,
-                                        widget.category,
-                                        descriptionController.text.isEmpty
-                                            ? widget.desc
-                                            : descriptionController.text,
-                                      )
-                                    : editExpense(
-                                        '${selectedDate.toLocal()}.split('
-                                                ')[0]'
-                                            .split(' ')[0],
-                                        amountController.text.isEmpty
-                                            ? widget.amount
-                                            : amountController.text,
-                                        expence_id,
-                                        widget.category,
-                                        descriptionController.text.isEmpty
-                                            ? widget.desc
-                                            : descriptionController.text,
-                                      );
-                              },
-                              child: Container(
-                                height: height * 0.065,
-                                width: width * 0.3,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xff0EDAF5),
-                                  borderRadius: BorderRadius.circular(2),
-                                ),
-                                child: const Center(
-                                  child: Text(
-                                    'Submit',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w500,
-                                      color: Color(0xff063A98),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        )
-                      : Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            //!Delete
-                            InkWell(
-                              onTap: () {
-                                widget.isIncome
-                                    ? deleteIncome(widget.id)
-                                    : deleteExpence(widget.id);
+                  // Row(
+                  //   mainAxisAlignment: MainAxisAlignment.center,
+                  //   children: [
+                  //     //!Delete
+                  //     InkWell(
+                  //       onTap: () {
+                  //         // showDialog(
+                  //         //   context: context,
+                  //         //   builder: (context) => CustomDialog(
+                  //         //     height: height,
+                  //         //     width: width,
+                  //         //     mgs: 'Update',
+                  //         //   ),
+                  //         // );
+                  //     editIncome(
+                  //           '${selectedDate.toLocal()}.split('
+                  //               ')[0]'
+                  //               .split(' ')[0],
+                  //           amountController.text.isEmpty
+                  //               ? widget.amount
+                  //               : amountController.text,
+                  //           income_id,
+                  //           widget.category,
+                  //           descriptionController.text.isEmpty
+                  //               ? widget.desc
+                  //               : descriptionController.text,
+                  //         );
+                  //       },
+                  //       child: Container(
+                  //         height: height * 0.065,
+                  //         width: width * 0.3,
+                  //         decoration: BoxDecoration(
+                  //           color: const Color(0xff0EDAF5),
+                  //           borderRadius: BorderRadius.circular(2),
+                  //         ),
+                  //         child: const Center(
+                  //           child: Text(
+                  //             'Submit',
+                  //             style: TextStyle(
+                  //               fontSize: 18,
+                  //               fontWeight: FontWeight.w500,
+                  //               color: Color(0xff063A98),
+                  //             ),
+                  //           ),
+                  //         ),
+                  //       ),
+                  //     ),
+                  //   ],
+                  // ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      //!Delete
+                      InkWell(
+                        onTap: () {
+                          // widget.isIncome
+                          //     ? deleteIncome(widget.id)
+                          //     : deleteExpence(widget.id);
 
-                                // showDialog(
-                                //   context: context,
-                                //   builder: (context) => CustomDialog(
-                                //     height: height,
-                                //     width: width,
-                                //     mgs: 'Delete',
-                                //   ),
-                                // );
-                              },
-                              child: Container(
-                                height: height * 0.065,
-                                width: width * 0.3,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xff0EDAF5),
-                                  borderRadius: BorderRadius.circular(2),
-                                ),
-                                child: const Center(
-                                  child: Text(
-                                    'Delete',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w500,
-                                      color: Color(0xff063A98),
-                                    ),
-                                  ),
-                                ),
+                          // showDialog(
+                          //   context: context,
+                          //   builder: (context) => CustomDialog(
+                          //     height: height,
+                          //     width: width,
+                          //     mgs: 'Delete',
+                          //   ),
+                          // );
+                          deleteIncome(widget.id.toString());
+                        },
+                        child: Container(
+                          height: height * 0.065,
+                          width: width * 0.3,
+                          decoration: BoxDecoration(
+                            color: const Color(0xff0EDAF5),
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                          child: const Center(
+                            child: Text(
+                              'Delete',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                                color: Color(0xff063A98),
                               ),
                             ),
-
-                            //!Edit
-                            InkWell(
-                              onTap: () {
-                                // showDialog(
-                                //   context: context,
-                                //   builder: (context) => CustomDialog(
-                                //       height: height, width: width, mgs: 'Edit'),
-                                // );
-                                setState(() {
-                                  isInEdit = true;
-                                });
-                              },
-                              child: Container(
-                                height: height * 0.065,
-                                width: width * 0.3,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xff0EDAF5),
-                                  borderRadius: BorderRadius.circular(2),
-                                ),
-                                child: const Center(
-                                  child: Text(
-                                    'Edit',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w500,
-                                      color: Color(0xff063A98),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
+                      ),
+
+                      //!Edit
+                      submitted==false?InkWell(
+                        onTap: () {
+                          // showDialog(
+                          //   context: context,
+                          //   builder: (context) => CustomDialog(
+                          //       height: height, width: width, mgs: 'Edit'),
+                          // );
+                     print('tapped');
+                     setState(() {
+                       submitted=true;
+                     });
+                          editIncome('${selectedDate.toLocal()}.split('
+                                            ')[0]'
+                                            .split(' ')[0],
+                                        amountController.text,
+                            income_id!=null?  income_id.toString():widget.catagory_id,
+                            tax=='Select Tax Information'?widget.tax=='Include Tax'?'yes':'no':tax=='Include Tax'?'yes':'no',
+
+                                       descriptionController.text,
+                                      );
+                        },
+                        child: Container(
+                          height: height * 0.065,
+                          width: width * 0.3,
+                          decoration: BoxDecoration(
+                            color: const Color(0xff0EDAF5),
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                          child: const Center(
+                            child: Text(
+                              'Update',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                                color: Color(0xff063A98),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ):CircularProgressIndicator(),
+                    ],
+                  ),
+
+
                   SizedBox(height: height * 0.08),
 
                 ],
@@ -957,6 +770,7 @@ class _EditTransactionState extends State<EditTransaction> {
       ),
     );
   }  String tax = 'Select Tax Information';
+  bool submitted=false;
 
 }
 

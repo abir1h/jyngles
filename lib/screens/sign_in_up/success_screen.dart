@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:jyngles/screens/sign_in_up/signin.dart';
 import 'package:jyngles/widgets/custom_bottom_navigation.dart';
 
 import '../../utils/colors.dart';
@@ -29,7 +30,7 @@ class SuccessScreen extends StatelessWidget {
             },
             child: const Icon(
               Icons.arrow_back,
-              color: Colors.black,
+              color: Colors.transparent,
             ),
           ),
         ),
@@ -69,10 +70,9 @@ class SuccessScreen extends StatelessWidget {
                 SizedBox(height: height * 0.1),
                 GestureDetector(
                   onTap: () {
-                    Get.to(
-                      const CustomBottomNavigationBar(),
-                      transition: Transition.rightToLeft,
-                    );
+
+                    Get.to(() => const CustomBottomNavigationBar());
+
                   },
                   child: Container(
                     height: height * 0.07,

@@ -64,7 +64,7 @@ class _LaunchScreenState extends State<LaunchScreen> {
                       });
                     },
                     child: Text(
-                      'Española',
+                      'Español',
                       style: TextStyle(
                         color: isEnglish == true ? Colors.black : Colors.white,
                       ),

@@ -18,6 +18,8 @@ class AddCalendarScreen extends StatefulWidget {
 
 class _AddCalendarScreenState extends State<AddCalendarScreen> {
   final GlobalKey<ScaffoldState> _key = GlobalKey();
+  TimeOfDay selectedTime = TimeOfDay.now();
+
   @override
   Widget build(BuildContext context) {
     final height = MediaQuery.of(context).size.height;
@@ -89,7 +91,7 @@ class _AddCalendarScreenState extends State<AddCalendarScreen> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: const [
                                   Icon(
-                                    Icons.calendar_month_outlined,
+                                    Icons.calendar_today,
                                     color: AppColors.calendarIconColor,
                                   ),
                                   SizedBox(width: 5),
