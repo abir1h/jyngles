@@ -170,7 +170,7 @@ Future? myfuture;
                                         color: AppColors.chatBackgroundColor,
                                         child: Column(
                                           children: [
-                                            SizedBox(height: height * 0.03),
+                                            SizedBox(height: height * 0.02),
                                             //!Needs, Wants, Savings
 
                                             Row(

@@ -399,7 +399,7 @@ class _ComparisonState extends State<Comparison> {
                         LineSeries(xAxisName: 'Month',
                             dataSource: widget.income,
                             xValueMapper: (datum, index) => widget.income[index]['data_month'],
-                            yValueMapper: (datum, index) => widget.income[index]['sum'],
+                            yValueMapper: (datum, index) =>double.parse( widget.income[index]['sum']),
                             name: '',
 
                             // Enable data label
@@ -416,7 +416,7 @@ class _ComparisonState extends State<Comparison> {
                         LineSeries(xAxisName: 'Month',
                             dataSource: widget.expense,
                             xValueMapper: (datum, index) => widget.expense[index]['data_month'],
-                            yValueMapper: (datum, index) => widget.expense[index]['sum'],
+                            yValueMapper: (datum, index) => double.parse( widget.expense[index]['sum']),
                             name: '',
 
 

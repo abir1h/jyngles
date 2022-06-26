@@ -24,7 +24,7 @@ class EditDebts extends StatefulWidget {
     required this.title,
   }) : super(key: key);
   final String id;
-  final int status;
+  final String status;
   final String date;
   final String amount;
   final String title;

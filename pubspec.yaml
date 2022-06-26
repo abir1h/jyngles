@@ -46,6 +46,7 @@ dependencies:
   string_to_color: ^1.0.1
   super_tooltip: ^1.0.1
 dev_dependencies:
+  change_app_package_name: ^1.1.0
   flutter_test:
     sdk: flutter
 
@@ -59,3 +60,4 @@ flutter:
     - assets/icons/
     - assets/images/congrats.json
     - assets/images/splash.jpg
+    - assets/images/app_icon.jpeg

@@ -199,6 +199,7 @@ class _AddDebtsState extends State<AddDebts> {
                         SizedBox(
                           height: height * 0.04,
                           width: width * 0.7,
+
                           child: TextField(
                             onChanged: (value) {
                               title = value;

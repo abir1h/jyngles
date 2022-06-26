@@ -423,7 +423,7 @@ class _GoalsDebtsScreenState extends State<GoalsDebtsScreen>
                                                                 status: snapshot
                                                                             .data[
                                                                         index]
-                                                                    ['status'],
+                                                                    ['status'].toString(),
                                                                 title: snapshot
                                                                             .data[
                                                                         index]
@@ -452,7 +452,7 @@ class _GoalsDebtsScreenState extends State<GoalsDebtsScreen>
                                                             status: snapshot
                                                                 .data[
                                                             index]
-                                                            ['status'] ,
+                                                            ['status'].toString() ,
                                                           ),
                                                         );
                                                       },
@@ -663,7 +663,7 @@ class _GoalsDebtsScreenState extends State<GoalsDebtsScreen>
                                                                 status: snapshot
                                                                     .data[
                                                                 index]
-                                                                ['status'],
+                                                                ['status'].toString(),
                                                                 title: snapshot
                                                                     .data[
                                                                 index]
@@ -753,7 +753,7 @@ class BillList extends StatelessWidget {
   final String billName;
   final String billAmount;
   final String billTime;
-  final int status;
+  final String status;
 
   @override
   Widget build(BuildContext context) {
@@ -817,7 +817,7 @@ class BillList extends StatelessWidget {
                       ),
                       child:  Center(
                         child: Text(
-                          status==0?'PENDING':status==1?'Completed':'Failed',
+                          status=='0'?'PENDING':status=='1'?'Completed':'Failed',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 14,
